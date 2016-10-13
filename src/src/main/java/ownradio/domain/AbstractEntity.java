@@ -8,6 +8,7 @@ import ownradio.annotation.DisplayName;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * Базовый класс для всех сущностей
@@ -23,7 +24,7 @@ public abstract class AbstractEntity implements Serializable {
 	@GeneratedValue(generator = "uuid")
 	@GenericGenerator(name = "uuid", strategy = "uuid2")
 	@Column(unique = true)
-	private String id;
+	private UUID id;
 
 	@DisplayName(key = "version")
 	@Version

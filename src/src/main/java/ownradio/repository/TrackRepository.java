@@ -2,9 +2,13 @@ package ownradio.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
+import org.springframework.data.repository.query.Param;
 import ownradio.domain.Track;
 
-public interface TrackRepository extends JpaRepository<Track, String> {
-	@Query(value = "select * from random_track(?1)", nativeQuery = true)
-	Track getRandomTrackByUserId(String userId);
+import java.util.UUID;
+
+public interface TrackRepository extends JpaRepository<Track, UUID> {
+	@Query(value = "select * from getnexttrackid(?1)", nativeQuery = true)
+	Track getNextTrackId(UUID deviceId);
 }

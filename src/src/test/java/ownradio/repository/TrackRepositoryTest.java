@@ -43,7 +43,7 @@ public class TrackRepositoryTest {
 		Set<Track> trackSet = new HashSet<>();
 
 		for (int i = 0; i < 3; i++) {
-			Track track = trackRepository.getRandomTrackByUserId(user.getId());
+			Track track = trackRepository.getNextTrackId(user.getId());
 			trackSet.add(track);
 		}
 

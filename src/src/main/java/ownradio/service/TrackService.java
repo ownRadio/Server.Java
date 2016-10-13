@@ -10,8 +10,7 @@ import ownradio.domain.User;
 import ownradio.repository.TrackRepository;
 import ownradio.util.ResourceUtil;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.UUID;
 
 @Service
 public class TrackService {
@@ -24,30 +23,20 @@ public class TrackService {
 	}
 
 	@Transactional(readOnly = true)
-	public Track getById(String id) {
+	public Track getById(UUID id) {
 		return trackRepository.findOne(id);
 	}
 
 	@Transactional(readOnly = true)
-	public String getRandomByUserId(String userId) {
-		User user = new User();
-		user.setId(userId);
-
-		List<Track> tracks = new ArrayList<>();//trackRepository.getRandomTrackByUserId(user.getId());
-
-		if (tracks.isEmpty()) {
-			return null;
-		}
-
-		// HACK: Возвращаем одну запись
-		return tracks.get(0).getId();
+	public UUID getNextTrackId(UUID deviceId) {
+		return trackRepository.getNextTrackId(deviceId).getId();
 	}
 
 	@Transactional
 	public void save(Track track, MultipartFile file) {
 		trackRepository.save(track);
 
-		String dirName = track.getUploadUser().getId();
+		String dirName = track.getUploadUser().getId().toString();
 		String fileName = track.getId() + "." + StringUtils.getFilenameExtension(file.getOriginalFilename());
 		String filePath = ResourceUtil.save(dirName, fileName, file);
 

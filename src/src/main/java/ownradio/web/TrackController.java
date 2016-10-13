@@ -13,6 +13,7 @@ import ownradio.service.UserService;
 import ownradio.util.ResourceUtil;
 
 import java.beans.PropertyEditorSupport;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(value = "/tracks")
@@ -44,7 +45,7 @@ public class TrackController {
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
-	public ResponseEntity<?> getTrack(@PathVariable String id) {
+	public ResponseEntity<?> getTrack(@PathVariable UUID id) {
 		Track track = trackService.getById(id);
 
 		if (track != null) {
@@ -55,9 +56,9 @@ public class TrackController {
 		}
 	}
 
-	@RequestMapping(value = "/{userId}/random", method = RequestMethod.GET)
-	public ResponseEntity<?> getRandomTrack(@PathVariable String userId) {
-		String trackId = trackService.getRandomByUserId(userId);
+	@RequestMapping(value = "/{deviceId}/random", method = RequestMethod.GET)
+	public ResponseEntity<?> getRandomTrack(@PathVariable UUID deviceId) {
+		String trackId = trackService.getNextTrackId(deviceId).toString();
 
 		if (trackId != null && !trackId.isEmpty()) {
 			return new ResponseEntity<>(trackId, HttpStatus.OK);
@@ -71,7 +72,7 @@ public class TrackController {
 		binder.registerCustomEditor(User.class, "uploadUser", new PropertyEditorSupport() {
 			@Override
 			public void setAsText(String text) {
-				User user = userService.getById(text);
+				User user = userService.getById(UUID.fromString(text));
 				setValue(user);
 			}
 		});

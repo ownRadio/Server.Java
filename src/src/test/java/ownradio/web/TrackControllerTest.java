@@ -36,7 +36,7 @@ public class TrackControllerTest {
 	public static final UUID TRACK_UUID = UUID.randomUUID();
 	public static final UUID USER_UUID = UUID.randomUUID();
 	public static final UUID DEVICE_UUID = UUID.randomUUID();
-	public static final String FILE = TRACK_UUID + ".txt";
+	public static final String FILE = TRACK_UUID + ".mp3";
 	public static final String PATH = UPLOADING_DIR + USER_UUID + "/" + FILE;
 
 	@MockBean
@@ -62,7 +62,7 @@ public class TrackControllerTest {
 		track = new Track(PATH, uploadUser, "---");
 
 		String requestParam = "file";
-		String originalFilename = "test.txt";
+		String originalFilename = "test.mp3";
 		String contentType = "text/plain";
 
 		correctFile = new MockMultipartFile(requestParam, originalFilename, contentType, "Text".getBytes());

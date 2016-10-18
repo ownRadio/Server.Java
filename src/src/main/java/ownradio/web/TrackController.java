@@ -58,9 +58,9 @@ public class TrackController {
 
 	@RequestMapping(value = "/{deviceId}/random", method = RequestMethod.GET)
 	public ResponseEntity<?> getRandomTrack(@PathVariable UUID deviceId) {
-		String trackId = trackService.getNextTrackId(deviceId).toString();
+		UUID trackId = trackService.getNextTrackId(deviceId);
 
-		if (trackId != null && !trackId.isEmpty()) {
+		if (trackId != null) {
 			return new ResponseEntity<>(trackId, HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);

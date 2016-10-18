@@ -1,22 +1,10 @@
 package ownradio.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import ownradio.domain.DownloadTrack;
-import ownradio.repository.DownloadTrackRepository;
 
-@Service
-public class DownloadTrackService {
-
-	private final DownloadTrackRepository downloadTrackRepository;
-
-	@Autowired
-	public DownloadTrackService(DownloadTrackRepository downloadTrackRepository) {
-		this.downloadTrackRepository = downloadTrackRepository;
-	}
-
-
-	public void save(DownloadTrack downloadTrack) {
-		downloadTrackRepository.saveAndFlush(downloadTrack);
-	}
+/**
+ * Created by Tanat on 17.10.2016.
+ */
+public interface DownloadTrackService {
+	void save(DownloadTrack downloadTrack);
 }

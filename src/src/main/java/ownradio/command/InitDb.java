@@ -7,7 +7,7 @@ import ownradio.domain.User;
 import ownradio.service.UserService;
 
 @Component
-public class InitDb implements CommandLineRunner{
+public class InitDb implements CommandLineRunner {
 	@Autowired
 	private UserService userService;
 

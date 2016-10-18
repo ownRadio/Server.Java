@@ -1,22 +1,14 @@
 package ownradio.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import ownradio.domain.Device;
-import ownradio.repository.DeviceRepository;
 
-@Service
-public class DeviceService {
+import java.util.UUID;
 
-	private final DeviceRepository deviceRepository;
+/**
+ * Created by Tanat on 17.10.2016.
+ */
+public interface DeviceService {
+	void save(Device device);
 
-	@Autowired
-	public DeviceService(DeviceRepository deviceRepository) {
-		this.deviceRepository = deviceRepository;
-	}
-
-
-	public void save(Device device) {
-		deviceRepository.saveAndFlush(device);
-	}
+	Device getById(UUID uuid);
 }

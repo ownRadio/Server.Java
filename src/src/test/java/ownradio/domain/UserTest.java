@@ -2,8 +2,6 @@ package ownradio.domain;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -13,7 +11,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static ownradio.util.ReflectUtil.getDisplayNameFields;
 
-@RunWith(JUnit4.class)
 public class UserTest {
 
 	private Map<String, String> expected;
@@ -24,7 +21,7 @@ public class UserTest {
 	}
 
 	@Test
-	public void testShowDisplayNameRu() throws Exception {
+	public void showDisplayNameRu() throws Exception {
 		Locale.setDefault(new Locale("ru"));
 
 		expected.put("id", "Название идентификатора на ru");
@@ -37,7 +34,7 @@ public class UserTest {
 	}
 
 	@Test
-	public void testShowDisplayNameEn() throws Exception {
+	public void showDisplayNameEn() throws Exception {
 		Locale.setDefault(new Locale("en"));
 
 		expected.put("id", "Название идентификатора на en");

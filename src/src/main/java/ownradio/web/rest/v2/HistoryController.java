@@ -21,7 +21,7 @@ import java.beans.PropertyEditorSupport;
 import java.util.UUID;
 
 /**
- * WEB API для работы с историей прослушанных пользователем треков
+ * WEB API для работы с историей прослушанных треков
  *
  * @author Alpenov Tanat
  */

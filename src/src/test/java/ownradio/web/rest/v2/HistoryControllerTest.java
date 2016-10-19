@@ -1,4 +1,4 @@
-package ownradio.web;
+package ownradio.web.rest.v2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -17,6 +17,7 @@ import ownradio.service.DeviceService;
 import ownradio.service.HistoryService;
 import ownradio.service.TrackService;
 import ownradio.service.UserService;
+import ownradio.web.rest.v2.HistoryController;
 
 import java.util.UUID;
 
@@ -69,7 +70,7 @@ public class HistoryControllerTest {
 		given(this.trackService.getById(TRACK_UUID)).willReturn(track);
 		given(this.deviceService.getById(DEVICE_UUID)).willReturn(device);
 
-		mockMvc.perform(post("/histories")
+		mockMvc.perform(post("/api/v2/histories")
 				.param("user", USER_UUID.toString())
 				.param("track", TRACK_UUID.toString())
 				.param("lastListen", "12/12/2016")
@@ -90,7 +91,7 @@ public class HistoryControllerTest {
 
 		doThrow(RuntimeException.class).when(this.historyService).save(any(History.class));
 
-		mockMvc.perform(post("/histories")
+		mockMvc.perform(post("/api/v2/histories")
 				.param("user", USER_UUID.toString())
 				.param("track", TRACK_UUID.toString())
 				.param("lastListen", "12/12/2016")

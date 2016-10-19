@@ -1,4 +1,4 @@
-package ownradio.web;
+package ownradio.web.rest.v2;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,7 +16,7 @@ import java.beans.PropertyEditorSupport;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(value = "/tracks")
+@RequestMapping(value = "/api/v2/tracks")
 public class TrackController {
 
 	private final TrackService trackService;

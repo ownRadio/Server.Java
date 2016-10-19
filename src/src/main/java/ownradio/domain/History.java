@@ -10,6 +10,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.persistence.*;
 import java.util.Date;
 
+/**
+ * Сущность для хранения информации о прослушанных треках
+ *
+ * @author Alpenov Tanat
+ */
 @Getter
 @Setter
 @NoArgsConstructor

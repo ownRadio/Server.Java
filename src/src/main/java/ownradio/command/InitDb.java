@@ -8,6 +8,11 @@ import org.springframework.stereotype.Component;
 import ownradio.domain.User;
 import ownradio.service.UserService;
 
+/**
+ * Класс инициализирует БД первоначальными данными
+ *
+ * @author Alpenov Tanat
+ */
 @Slf4j
 @Profile("dev")
 @Component

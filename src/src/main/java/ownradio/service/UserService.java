@@ -5,7 +5,9 @@ import ownradio.domain.User;
 import java.util.UUID;
 
 /**
- * Created by Tanat on 17.10.2016.
+ * Интерфейс сервиса, для работы с пользовательскими данными
+ *
+ * @author Alpenov Tanat
  */
 public interface UserService {
 	User getById(UUID id);

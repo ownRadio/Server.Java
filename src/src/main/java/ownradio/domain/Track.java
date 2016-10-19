@@ -7,6 +7,11 @@ import lombok.Setter;
 
 import javax.persistence.*;
 
+/**
+ * Сущность для хранения информации о треке
+ *
+ * @author Alpenov Tanat
+ */
 @Getter
 @Setter
 @NoArgsConstructor

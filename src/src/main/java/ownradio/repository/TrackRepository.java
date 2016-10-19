@@ -6,6 +6,11 @@ import ownradio.domain.Track;
 
 import java.util.UUID;
 
+/**
+ * Интерфейс репозитория, для хранения треков
+ *
+ * @author Alpenov Tanat
+ */
 public interface TrackRepository extends JpaRepository<Track, UUID> {
 	@Query(value = "select * from getnexttrackid(?1)", nativeQuery = true)
 	Track getNextTrackId(UUID deviceId);

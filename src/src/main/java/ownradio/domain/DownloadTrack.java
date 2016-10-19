@@ -10,6 +10,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+/**
+ * Сущность для хранения информации о скаченных треках
+ *
+ * @author Alpenov Tanat
+ */
 @Getter
 @Setter
 @NoArgsConstructor

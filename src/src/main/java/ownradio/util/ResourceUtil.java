@@ -13,6 +13,11 @@ import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+/**
+ * Класс утилита для упрощения работы с ресурсами
+ *
+ * @author Alpenov Tanat
+ */
 public class ResourceUtil {
 	public static final String USER_DIR = System.getProperty("user.dir");
 	public static final String UPLOADING_DIR = USER_DIR + "/userfile/";

@@ -12,7 +12,9 @@ import java.util.UUID;
 
 /**
  * Базовый класс для всех сущностей
- * Created by Tanat on 29.09.2016.
+ * Предназначен для хранения технической информации
+ *
+ * @author Alpenov Tanat
  */
 @Getter
 @Setter

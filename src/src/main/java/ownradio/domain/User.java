@@ -9,6 +9,11 @@ import ownradio.annotation.DisplayName;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+/**
+ * Сущность для хранения информации о пользователе
+ *
+ * @author Alpenov Tanat
+ */
 @Getter
 @Setter
 @NoArgsConstructor

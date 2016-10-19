@@ -6,7 +6,9 @@ import ownradio.domain.Track;
 import java.util.UUID;
 
 /**
- * Created by Tanat on 17.10.2016.
+ * Интерфейс сервиса, для работы с треками
+ *
+ * @author Alpenov Tanat
  */
 public interface TrackService {
 

@@ -3,7 +3,9 @@ package ownradio.service;
 import ownradio.domain.Rating;
 
 /**
- * Created by Tanat on 17.10.2016.
+ * Интерфейс сервиса, для работы с рейтингами прослушанных треков
+ *
+ * @author Alpenov Tanat
  */
 public interface RatingService {
 	void save(Rating rating);

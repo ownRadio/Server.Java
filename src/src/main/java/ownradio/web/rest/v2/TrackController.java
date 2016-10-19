@@ -15,6 +15,11 @@ import ownradio.util.ResourceUtil;
 import java.beans.PropertyEditorSupport;
 import java.util.UUID;
 
+/**
+ * WEB API для работы с треками
+ *
+ * @author Alpenov Tanat
+ */
 @RestController
 @RequestMapping(value = "/api/v2/tracks")
 public class TrackController {

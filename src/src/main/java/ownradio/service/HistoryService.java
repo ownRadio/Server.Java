@@ -3,7 +3,9 @@ package ownradio.service;
 import ownradio.domain.History;
 
 /**
- * Created by Tanat on 17.10.2016.
+ * Интерфейс сервиса, для работы с историей прослушанных треков
+ *
+ * @author Alpenov Tanat
  */
 public interface HistoryService {
 	void save(History history);

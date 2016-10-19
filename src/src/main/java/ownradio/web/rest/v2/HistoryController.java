@@ -20,6 +20,11 @@ import ownradio.service.UserService;
 import java.beans.PropertyEditorSupport;
 import java.util.UUID;
 
+/**
+ * WEB API для работы с историей прослушанных пользователем треков
+ *
+ * @author Alpenov Tanat
+ */
 @RestController
 @RequestMapping("/api/v2/histories")
 public class HistoryController {

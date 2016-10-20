@@ -61,8 +61,8 @@ public class TrackController {
 		}
 	}
 
-	@RequestMapping(value = "/{deviceId}/random", method = RequestMethod.GET)
-	public ResponseEntity<?> getRandomTrack(@PathVariable UUID deviceId) {
+	@RequestMapping(value = "/{deviceId}/next", method = RequestMethod.GET)
+	public ResponseEntity<?> getNextTrackId(@PathVariable UUID deviceId) {
 		UUID trackId = trackService.getNextTrackId(deviceId);
 
 		if (trackId != null) {

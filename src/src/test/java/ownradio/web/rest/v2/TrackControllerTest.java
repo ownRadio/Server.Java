@@ -134,10 +134,10 @@ public class TrackControllerTest {
 	}
 
 	@Test
-	public void getRandomTrackStatusIsOk() throws Exception {
+	public void getNextTrackIdIsOk() throws Exception {
 		given(this.trackService.getNextTrackId(DEVICE_UUID)).willReturn(TRACK_UUID);
 
-		mockMvc.perform(get("/api/v2/tracks/" + DEVICE_UUID + "/random"))
+		mockMvc.perform(get("/api/v2/tracks/" + DEVICE_UUID + "/next"))
 				.andExpect(
 						status().isOk()
 				)
@@ -148,10 +148,10 @@ public class TrackControllerTest {
 	}
 
 	@Test
-	public void getRandomTrackStatusIsNotFound() throws Exception {
+	public void getNextTrackIdIsNotFound() throws Exception {
 		given(this.trackService.getNextTrackId(DEVICE_UUID)).willReturn(null);
 
-		mockMvc.perform(get("/api/v2/tracks/" + DEVICE_UUID + "/random"))
+		mockMvc.perform(get("/api/v2/tracks/" + DEVICE_UUID + "/next"))
 				.andExpect(
 						status().isNotFound()
 				);

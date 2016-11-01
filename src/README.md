@@ -2,6 +2,17 @@
 
 Этот проект разрабатывается с целью тестирования и обкатки Java технологий  
 
+Run
+---
+##### Запускаем с помощью maven
+* $ mvn -Dupload.dir=c:\ -Dspring.profiles.active=dev spring-boot:run
+* $ mvn -Dupload.dir=c:\ -Dspring.profiles.active=prod spring-boot:run
+
+##### Запускаем упакованный jar 
+* $ java -Dupload.dir=c:\ -jar ownradio.jar --spring.profiles.active=dev
+* $ java -Dupload.dir=c:\ -jar ownradio.jar --spring.profiles.active=prod
+
+
 Web API
 ---
 

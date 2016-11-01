@@ -5,12 +5,12 @@
 Run
 ---
 ##### Запускаем с помощью maven
-* $ mvn -Dupload.dir=c:\ -Dspring.profiles.active=dev spring-boot:run
-* $ mvn -Dupload.dir=c:\ -Dspring.profiles.active=prod spring-boot:run
+* $ mvn -Dupload.dir=c:\ -Dspring.profiles.active=dev -Dserver.port=8080 spring-boot:run
+* $ mvn -Dupload.dir=c:\ -Dspring.profiles.active=prod -Dserver.port=8080 spring-boot:run
 
 ##### Запускаем упакованный jar 
-* $ java -Dupload.dir=c:\ -jar ownradio.jar --spring.profiles.active=dev
-* $ java -Dupload.dir=c:\ -jar ownradio.jar --spring.profiles.active=prod
+* $ java -Dupload.dir=c:\ -jar ownradio.jar --spring.profiles.active=dev --server.port=8080
+* $ java -Dupload.dir=c:\ -jar ownradio.jar --spring.profiles.active=prod --server.port=8080
 
 
 Web API

@@ -1,4 +1,4 @@
-package ownradio.web;
+package ownradio.web.rest.v2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static ownradio.util.ResourceUtil.UPLOADING_DIR;
+import static ownradio.util.ResourceUtil.UPLOAD_DIR;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(TrackController.class)
@@ -37,7 +37,7 @@ public class TrackControllerTest {
 	public static final UUID USER_UUID = UUID.randomUUID();
 	public static final UUID DEVICE_UUID = UUID.randomUUID();
 	public static final String FILE = TRACK_UUID + ".mp3";
-	public static final String PATH = UPLOADING_DIR + USER_UUID + "/" + FILE;
+	public static final String PATH = UPLOAD_DIR + USER_UUID + "/" + FILE;
 
 	@MockBean
 	private TrackService trackService;
@@ -73,14 +73,14 @@ public class TrackControllerTest {
 
 	@After
 	public void tearDown() throws Exception {
-		FileUtils.deleteDirectory(new File(UPLOADING_DIR));
+		FileUtils.deleteDirectory(new File(UPLOAD_DIR));
 	}
 
 	@Test
 	public void saveStatusIsOk() throws Exception {
 		given(this.userService.getById(USER_UUID)).willReturn(uploadUser);
 
-		mockMvc.perform(fileUpload("/tracks")
+		mockMvc.perform(fileUpload("/api/v2/tracks")
 				.file(correctFile)
 				.accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
 				.param("path", track.getPath())
@@ -96,7 +96,7 @@ public class TrackControllerTest {
 
 	@Test
 	public void saveStatusIsBadRequest() throws Exception {
-		mockMvc.perform(fileUpload("/tracks")
+		mockMvc.perform(fileUpload("/api/v2/tracks")
 				.file(emptyFile)
 				.accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
 				.param("path", track.getPath())
@@ -112,7 +112,7 @@ public class TrackControllerTest {
 	public void getTrackStatusIsOk() throws Exception {
 		given(this.trackService.getById(TRACK_UUID)).willReturn(track);
 
-		mockMvc.perform(get("/tracks/" + TRACK_UUID).accept(MediaType.TEXT_PLAIN))
+		mockMvc.perform(get("/api/v2/tracks/" + TRACK_UUID).accept(MediaType.TEXT_PLAIN))
 				.andExpect(
 						status().isOk()
 				)
@@ -126,17 +126,17 @@ public class TrackControllerTest {
 
 		given(this.trackService.getById(TRACK_UUID)).willReturn(null);
 
-		mockMvc.perform(get("/tracks/" + TRACK_UUID).accept(MediaType.TEXT_PLAIN))
+		mockMvc.perform(get("/api/v2/tracks/" + TRACK_UUID).accept(MediaType.TEXT_PLAIN))
 				.andExpect(
 						status().isNotFound()
 				);
 	}
 
 	@Test
-	public void getRandomTrackStatusIsOk() throws Exception {
+	public void getNextTrackIdIsOk() throws Exception {
 		given(this.trackService.getNextTrackId(DEVICE_UUID)).willReturn(TRACK_UUID);
 
-		mockMvc.perform(get("/tracks/" + DEVICE_UUID + "/random"))
+		mockMvc.perform(get("/api/v2/tracks/" + DEVICE_UUID + "/next"))
 				.andExpect(
 						status().isOk()
 				)
@@ -147,10 +147,10 @@ public class TrackControllerTest {
 	}
 
 	@Test
-	public void getRandomTrackStatusIsNotFound() throws Exception {
+	public void getNextTrackIdIsNotFound() throws Exception {
 		given(this.trackService.getNextTrackId(DEVICE_UUID)).willReturn(null);
 
-		mockMvc.perform(get("/tracks/" + DEVICE_UUID + "/random"))
+		mockMvc.perform(get("/api/v2/tracks/" + DEVICE_UUID + "/next"))
 				.andExpect(
 						status().isNotFound()
 				);

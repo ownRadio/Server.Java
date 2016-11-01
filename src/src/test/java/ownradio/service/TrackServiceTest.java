@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
-import static ownradio.util.ResourceUtil.UPLOADING_DIR;
+import static ownradio.util.ResourceUtil.UPLOAD_DIR;
 
 @RunWith(SpringRunner.class)
 public class TrackServiceTest {
@@ -46,7 +46,7 @@ public class TrackServiceTest {
 
 	@After
 	public void tearDown() throws Exception {
-		FileUtils.deleteDirectory(new File(UPLOADING_DIR));
+		FileUtils.deleteDirectory(new File(UPLOAD_DIR));
 	}
 
 	@Test

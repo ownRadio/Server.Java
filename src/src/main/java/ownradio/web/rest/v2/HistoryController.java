@@ -1,4 +1,4 @@
-package ownradio.web;
+package ownradio.web.rest.v2;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,8 +20,13 @@ import ownradio.service.UserService;
 import java.beans.PropertyEditorSupport;
 import java.util.UUID;
 
+/**
+ * WEB API для работы с историей прослушанных треков
+ *
+ * @author Alpenov Tanat
+ */
 @RestController
-@RequestMapping("/histories")
+@RequestMapping("/api/v2/histories")
 public class HistoryController {
 	private final HistoryService historyService;
 	private final UserService userService;

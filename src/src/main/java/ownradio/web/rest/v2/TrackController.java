@@ -1,4 +1,4 @@
-package ownradio.web;
+package ownradio.web.rest.v2;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,8 +15,13 @@ import ownradio.util.ResourceUtil;
 import java.beans.PropertyEditorSupport;
 import java.util.UUID;
 
+/**
+ * WEB API для работы с треками
+ *
+ * @author Alpenov Tanat
+ */
 @RestController
-@RequestMapping(value = "/tracks")
+@RequestMapping(value = "/api/v2/tracks")
 public class TrackController {
 
 	private final TrackService trackService;
@@ -56,8 +61,8 @@ public class TrackController {
 		}
 	}
 
-	@RequestMapping(value = "/{deviceId}/random", method = RequestMethod.GET)
-	public ResponseEntity<?> getRandomTrack(@PathVariable UUID deviceId) {
+	@RequestMapping(value = "/{deviceId}/next", method = RequestMethod.GET)
+	public ResponseEntity<?> getNextTrackId(@PathVariable UUID deviceId) {
 		UUID trackId = trackService.getNextTrackId(deviceId);
 
 		if (trackId != null) {

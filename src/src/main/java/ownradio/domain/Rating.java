@@ -10,6 +10,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.persistence.*;
 import java.util.Date;
 
+/**
+ * Сущность для хранения информации о рейтингах треков
+ *
+ * @author Alpenov Tanat
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,7 +28,7 @@ public class Rating extends AbstractEntity {
 
 	@ManyToOne
 	@JoinColumn(name = "track_id")
-	private Track trackId;
+	private Track track;
 
 	@DateTimeFormat(pattern = "dd/MM/yyyy")
 	@Column(nullable = false)

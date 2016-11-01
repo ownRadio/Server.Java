@@ -6,6 +6,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.*;
 
+/**
+ * Класс утилита для упрощения работы с рефлексией
+ *
+ * @author Alpenov Tanat
+ */
 public class ReflectUtil {
 	private ReflectUtil() {
 	}

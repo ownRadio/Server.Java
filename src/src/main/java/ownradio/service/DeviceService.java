@@ -5,7 +5,9 @@ import ownradio.domain.Device;
 import java.util.UUID;
 
 /**
- * Created by Tanat on 17.10.2016.
+ * Интерфейс сервиса, для работы с девайсами
+ *
+ * @author Alpenov Tanat
  */
 public interface DeviceService {
 	void save(Device device);

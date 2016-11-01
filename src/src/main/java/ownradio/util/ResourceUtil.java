@@ -13,10 +13,15 @@ import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+/**
+ * Класс утилита для упрощения работы с ресурсами
+ *
+ * @author Alpenov Tanat
+ */
 public class ResourceUtil {
-	public static final String USER_DIR = System.getProperty("user.dir");
-	public static final String UPLOADING_DIR = USER_DIR + "/userfile/";
-	public static final String MESSAGE_DIR = USER_DIR + "/msg";
+	public static final String APP_DIR = System.getProperty("user.dir");
+	public static final String UPLOAD_DIR = System.getProperty("upload.dir") == null ? APP_DIR + "/userfile/" : System.getProperty("upload.dir");
+	public static final String MESSAGE_DIR = APP_DIR + "/msg";
 	public static final String MESSAGE_BASE_NAME = "masseage";
 
 	private ResourceUtil() {
@@ -34,12 +39,12 @@ public class ResourceUtil {
 
 	public static String save(String userDir, String fileName, MultipartFile file) {
 		try {
-			File dir = new File(UPLOADING_DIR + userDir);
+			File dir = new File(UPLOAD_DIR + userDir);
 			if (!dir.exists()) {
 				dir.mkdirs();
 			}
 
-			String filePath = Paths.get(UPLOADING_DIR, userDir, fileName).toString();
+			String filePath = Paths.get(UPLOAD_DIR, userDir, fileName).toString();
 			file.transferTo(new File(filePath));
 
 			return filePath;

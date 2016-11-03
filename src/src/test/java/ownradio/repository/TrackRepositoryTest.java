@@ -14,6 +14,7 @@ import ownradio.domain.User;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.Assert.assertTrue;
 
@@ -39,11 +40,11 @@ public class TrackRepositoryTest {
 	}
 
 	@Test
-	public void getRandomTrackByUserId() throws Exception {
-		Set<Track> trackSet = new HashSet<>();
+	public void getNextTrackId() throws Exception {
+		Set<UUID> trackSet = new HashSet<>();
 
 		for (int i = 0; i < 3; i++) {
-			Track track = trackRepository.getNextTrackId(user.getId());
+			UUID track = trackRepository.getNextTrackId(user.getId());
 			trackSet.add(track);
 		}
 

@@ -51,7 +51,7 @@ public class TrackServiceTest {
 
 	@Test
 	public void getNextTrackId() throws Exception {
-		given(this.trackRepository.getNextTrackId(trackId)).willReturn(expected);
+		given(this.trackRepository.getNextTrackId(trackId)).willReturn(trackId);
 
 		UUID actual = trackService.getNextTrackId(trackId);
 

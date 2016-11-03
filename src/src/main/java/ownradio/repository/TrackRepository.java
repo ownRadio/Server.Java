@@ -13,5 +13,5 @@ import java.util.UUID;
  */
 public interface TrackRepository extends JpaRepository<Track, UUID> {
 	@Query(value = "select * from getnexttrackid(?1)", nativeQuery = true)
-	Track getNextTrackId(UUID deviceId);
+	UUID getNextTrackId(UUID deviceId);
 }

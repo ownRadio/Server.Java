@@ -28,10 +28,6 @@ public abstract class AbstractEntity implements Serializable {
 	@Column(unique = true)
 	private UUID id;
 
-	@DisplayName(key = "version")
-	@Version
-	private Integer version;
-
 	private Date createdAt;
 	private Date updatedAt;
 

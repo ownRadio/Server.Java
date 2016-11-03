@@ -1,12 +1,22 @@
 CREATE OR REPLACE FUNCTION getnexttrackid(IN i_deviceid UUID)
-    RETURNS SETOF CHARACTER VARYING AS
+  RETURNS SETOF UUID AS
 '
 BEGIN
   RETURN QUERY
-  SELECT cast(id::uuid as varchar)
+  SELECT id
   FROM tracks
   ORDER BY RANDOM()
   LIMIT 1;
+END;
+'
+LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION getnexttrackid_string(i_deviceid UUID)
+  RETURNS SETOF CHARACTER VARYING AS
+'
+BEGIN
+  RETURN QUERY SELECT CAST(getnexttrackid(i_deviceid) AS CHARACTER VARYING);
 END;
 '
 LANGUAGE plpgsql;

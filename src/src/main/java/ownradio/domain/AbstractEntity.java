@@ -28,6 +28,8 @@ public abstract class AbstractEntity implements Serializable {
 	@Column(unique = true)
 	private UUID id;
 
+	private String name;
+
 	private Date createdAt;
 	private Date updatedAt;
 

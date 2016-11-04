@@ -25,8 +25,6 @@ public class UserTest {
 		Locale.setDefault(new Locale("ru"));
 
 		expected.put("id", "Название идентификатора на ru");
-		expected.put("version", "Version ru");
-		expected.put("user.name", "Имя пользователя");
 
 		Map<String, String> actual = getDisplayNameFields(new User());
 
@@ -38,8 +36,6 @@ public class UserTest {
 		Locale.setDefault(new Locale("en"));
 
 		expected.put("id", "Название идентификатора на en");
-		expected.put("version", "Version en");
-		expected.put("user.name", "User name");
 
 		Map<String, String> actual = getDisplayNameFields(new User());
 

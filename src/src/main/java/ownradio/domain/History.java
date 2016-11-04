@@ -36,7 +36,7 @@ public class History extends AbstractEntity {
 	private Date lastListen;
 
 	@Column(nullable = false)
-	private boolean listen;
+	private int isListen; // 1, -1
 
 	@Column(nullable = false)
 	private String method;

@@ -17,11 +17,10 @@ import javax.persistence.Table;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "users")
 public class User extends AbstractEntity {
-	@DisplayName(key = "user.name")
-	private String name;
-
+	public User(String name) {
+		setName(name);
+	}
 }

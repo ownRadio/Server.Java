@@ -63,7 +63,7 @@ public class TrackControllerTest {
 
 		String requestParam = "file";
 		String originalFilename = "test.mp3";
-		String contentType = "text/plain";
+		String contentType = "audio/mpeg";
 
 		correctFile = new MockMultipartFile(requestParam, originalFilename, contentType, "Text".getBytes());
 		emptyFile = new MockMultipartFile(requestParam, originalFilename, contentType, "".getBytes());

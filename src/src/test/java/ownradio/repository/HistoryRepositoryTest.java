@@ -42,7 +42,7 @@ public class HistoryRepositoryTest {
 		Track track = trackRepository.saveAndFlush(new Track("1", user, "1"));
 		Device device = deviceRepository.saveAndFlush(new Device(user, "1"));
 
-		history = new History(user, track, new Date(), true, "post", device);
+		history = new History(user, track, new Date(), 0, "post", device);
 		historyRepository.saveAndFlush(history);
 	}
 
@@ -59,7 +59,7 @@ public class HistoryRepositoryTest {
 		assertThat(history.getUpdatedAt(), is(nullValue()));
 
 		History storeHistory = historyRepository.findOne(history.getId());
-		storeHistory.setListen(false);
+		storeHistory.setIsListen(1);
 		historyRepository.saveAndFlush(storeHistory);
 
 		assertThat(storeHistory.getCreatedAt(), not(nullValue()));

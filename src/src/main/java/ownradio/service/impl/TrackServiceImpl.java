@@ -31,7 +31,7 @@ public class TrackServiceImpl implements TrackService {
 	@Override
 	@Transactional(readOnly = true)
 	public UUID getNextTrackId(UUID deviceId) {
-		return trackRepository.getNextTrackId(deviceId).getId();
+		return trackRepository.getNextTrackId(deviceId);
 	}
 
 	@Override

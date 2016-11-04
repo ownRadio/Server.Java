@@ -1,20 +1,22 @@
 CREATE OR REPLACE FUNCTION getnexttrackid(IN i_deviceid UUID)
-    RETURNS TABLE(
-      id                       UUID
-    , created_at               TIMESTAMP
-    , updated_at               TIMESTAMP
-    , version                  INTEGER
-    , local_device_path_upload CHARACTER VARYING
-    , path                     CHARACTER VARYING
-    , upload_user_id           UUID
-    ) AS
+  RETURNS SETOF UUID AS
 '
 BEGIN
-    RETURN QUERY
-    SELECT *
-    FROM tracks
-    ORDER BY RANDOM()
-    LIMIT 1;
+  RETURN QUERY
+  SELECT id
+  FROM tracks
+  ORDER BY RANDOM()
+  LIMIT 1;
+END;
+'
+LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION getnexttrackid_string(i_deviceid UUID)
+  RETURNS SETOF CHARACTER VARYING AS
+'
+BEGIN
+  RETURN QUERY SELECT CAST(getnexttrackid(i_deviceid) AS CHARACTER VARYING);
 END;
 '
 LANGUAGE plpgsql;

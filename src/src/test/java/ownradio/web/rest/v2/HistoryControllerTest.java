@@ -17,7 +17,6 @@ import ownradio.service.DeviceService;
 import ownradio.service.HistoryService;
 import ownradio.service.TrackService;
 import ownradio.service.UserService;
-import ownradio.web.rest.v2.HistoryController;
 
 import java.util.UUID;
 

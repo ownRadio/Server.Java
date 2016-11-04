@@ -24,10 +24,6 @@ import java.util.Date;
 public class History extends AbstractEntity {
 
 	@ManyToOne
-	@JoinColumn(name = "user_id")
-	private User user;
-
-	@ManyToOne
 	@JoinColumn(name = "track_id")
 	private Track track;
 

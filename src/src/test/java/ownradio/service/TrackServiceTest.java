@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
+import ownradio.domain.Device;
 import ownradio.domain.Track;
 import ownradio.domain.User;
 import ownradio.repository.TrackRepository;
@@ -31,6 +32,7 @@ public class TrackServiceTest {
 
 	private UUID userId = UUID.randomUUID();
 	private UUID trackId = UUID.randomUUID();
+	private UUID deviceId = UUID.randomUUID();
 	private Track expected;
 
 	@Before
@@ -39,9 +41,12 @@ public class TrackServiceTest {
 		expected = new Track();
 		expected.setId(trackId);
 
-		User uploadUser = new User();
-		uploadUser.setId(userId);
-		expected.setUploadUser(uploadUser);
+		User user = new User();
+		user.setId(userId);
+
+		Device device = new Device(user, "123");
+		device.setId(deviceId);
+		expected.setDevice(device);
 	}
 
 	@After
@@ -60,11 +65,13 @@ public class TrackServiceTest {
 
 	@Test
 	public void save() throws Exception {
-		MockMultipartFile correctFile = new MockMultipartFile("file", "test.mp3", "text/plain", "Text".getBytes());;
+		MockMultipartFile correctFile = new MockMultipartFile("file", "test.mp3", "text/plain", "Text".getBytes());
+		;
 
+		given(this.trackRepository.registerTrack(expected.getId(), expected.getLocalDevicePathUpload(), expected.getPath(), expected.getDevice().getId())).willReturn(true);
+		given(this.trackRepository.findOne(expected.getId())).willReturn(expected);
 		trackService.save(expected, correctFile);
 
 		assertThat(new File(expected.getPath()).exists(), is(true));
 	}
-
 }

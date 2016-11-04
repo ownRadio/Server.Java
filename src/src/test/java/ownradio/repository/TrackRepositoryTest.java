@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import ownradio.domain.Device;
 import ownradio.domain.Track;
 import ownradio.domain.User;
 
@@ -30,13 +31,15 @@ public class TrackRepositoryTest {
 	private TestEntityManager entityManager;
 
 	private User user;
+	private Device device;
 
 	@Before
 	public void setUp() throws Exception {
 		user = entityManager.persist(new User());
-		entityManager.persist(new Track("1", user, "1"));
-		entityManager.persist(new Track("2", user, "1"));
-		entityManager.persist(new Track("4", user, "1"));
+		device = entityManager.persist(new Device(user, "123"));
+		entityManager.persist(new Track("1", device, "1"));
+		entityManager.persist(new Track("2", device, "1"));
+		entityManager.persist(new Track("4", device, "1"));
 	}
 
 	@Test
@@ -44,7 +47,7 @@ public class TrackRepositoryTest {
 		Set<UUID> trackSet = new HashSet<>();
 
 		for (int i = 0; i < 3; i++) {
-			UUID track = trackRepository.getNextTrackId(user.getId());
+			UUID track = trackRepository.getNextTrackId(device.getId());
 			trackSet.add(track);
 		}
 

@@ -13,17 +13,17 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import ownradio.domain.Device;
 import ownradio.domain.Track;
 import ownradio.domain.User;
+import ownradio.service.DeviceService;
 import ownradio.service.TrackService;
-import ownradio.service.UserService;
 import ownradio.util.ResourceUtil;
 
 import java.io.File;
 import java.util.UUID;
 
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.fileUpload;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -43,7 +43,7 @@ public class TrackControllerTest {
 	private TrackService trackService;
 
 	@MockBean
-	private UserService userService;
+	private DeviceService deviceService;
 
 	@Autowired
 	protected MockMvc mockMvc;
@@ -53,15 +53,19 @@ public class TrackControllerTest {
 
 	private ObjectMapper mapper = new ObjectMapper();
 
-	private User uploadUser = new User();
+	private User user = new User();
+	private Device device = new Device();
 	private Track track;
 
 	@Before
 	public void setUp() throws Exception {
-		uploadUser.setId(USER_UUID);
-		track = new Track(PATH, uploadUser, "---");
+		user.setId(USER_UUID);
+		device.setId(DEVICE_UUID);
+		device.setUser(user);
 
-		String requestParam = "file";
+		track = new Track(PATH, device, "---");
+
+		String requestParam = "musicFile";
 		String originalFilename = "test.mp3";
 		String contentType = "audio/mpeg";
 
@@ -78,20 +82,19 @@ public class TrackControllerTest {
 
 	@Test
 	public void saveStatusIsOk() throws Exception {
-		given(this.userService.getById(USER_UUID)).willReturn(uploadUser);
+		given(this.deviceService.getById(DEVICE_UUID)).willReturn(device);
 
 		mockMvc.perform(fileUpload("/api/v2/tracks")
 				.file(correctFile)
 				.accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
-				.param("path", track.getPath())
-				.param("uploadUser", USER_UUID.toString())
-				.param("localDevicePathUpload", track.getLocalDevicePathUpload())
+				.param("fileGuid", TRACK_UUID.toString())
+				.param("fileName", correctFile.getOriginalFilename())
+				.param("filePath", PATH)
+				.param("deviceId", DEVICE_UUID.toString())
 		)
 				.andExpect(
 						status().isCreated()
 				);
-
-		verify(this.userService).getById(USER_UUID);
 	}
 
 	@Test
@@ -99,9 +102,10 @@ public class TrackControllerTest {
 		mockMvc.perform(fileUpload("/api/v2/tracks")
 				.file(emptyFile)
 				.accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
-				.param("path", track.getPath())
-				.param("uploadUser", USER_UUID.toString())
-				.param("localDevicePathUpload", track.getLocalDevicePathUpload())
+				.param("fileGuid", TRACK_UUID.toString())
+				.param("fileName", correctFile.getOriginalFilename())
+				.param("filePath", PATH)
+				.param("deviceId", DEVICE_UUID.toString())
 		)
 				.andExpect(
 						status().isBadRequest()

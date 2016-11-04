@@ -23,12 +23,6 @@ import static org.junit.Assert.assertThat;
 @DataJpaTest
 public class HistoryRepositoryTest {
 	@Autowired
-	private UserRepository userRepository;
-	@Autowired
-	private TrackRepository trackRepository;
-	@Autowired
-	private DeviceRepository deviceRepository;
-	@Autowired
 	private HistoryRepository historyRepository;
 
 	@Autowired
@@ -38,12 +32,12 @@ public class HistoryRepositoryTest {
 
 	@Before
 	public void setUp() throws Exception {
-		User user = userRepository.saveAndFlush(new User());
-		Track track = trackRepository.saveAndFlush(new Track("1", user, "1"));
-		Device device = deviceRepository.saveAndFlush(new Device(user, "1"));
+		User user = entityManager.persist(new User());
+		Device device = entityManager.persist(new Device(user, "1"));
+		Track track = entityManager.persist(new Track("1", device, "1"));
 
-		history = new History(user, track, new Date(), 0, "post", device);
-		historyRepository.saveAndFlush(history);
+		history = new History(track, new Date(), 0, "post", device);
+		entityManager.persist(history);
 	}
 
 	@Test

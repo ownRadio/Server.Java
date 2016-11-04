@@ -1,18 +1,20 @@
 package ownradio.web.rest.v2;
 
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import ownradio.domain.Device;
 import ownradio.domain.Track;
-import ownradio.domain.User;
 import ownradio.service.TrackService;
-import ownradio.service.UserService;
 import ownradio.util.ResourceUtil;
 
-import java.beans.PropertyEditorSupport;
 import java.util.UUID;
 
 /**
@@ -20,27 +22,49 @@ import java.util.UUID;
  *
  * @author Alpenov Tanat
  */
+@Slf4j
 @RestController
 @RequestMapping(value = "/api/v2/tracks")
 public class TrackController {
 
 	private final TrackService trackService;
-	private final UserService userService;
 
 	@Autowired
-	public TrackController(TrackService trackService, UserService userService) {
+	public TrackController(TrackService trackService) {
 		this.trackService = trackService;
-		this.userService = userService;
+	}
+
+	@Data
+	private static class TrackDTO {
+		private UUID fileGuid;
+		private String fileName;
+		private String filePath;
+		private UUID deviceId;
+		private MultipartFile musicFile;
+
+		public Track getTrack() {
+			Device device = new Device();
+			device.setId(deviceId);
+
+			Track track = new Track();
+			track.setId(fileGuid);
+			track.setName(fileName);
+			track.setDevice(device);
+			track.setPath("---");
+			track.setLocalDevicePathUpload(filePath);
+
+			return track;
+		}
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
-	public ResponseEntity save(@RequestParam MultipartFile file, Track track) {
-		if (file.isEmpty()) {
+	public ResponseEntity save(TrackDTO trackDTO) {
+		if (trackDTO.getMusicFile().isEmpty()) {
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		}
 
 		try {
-			trackService.save(track, file);
+			trackService.save(trackDTO.getTrack(), trackDTO.getMusicFile());
 
 			return new ResponseEntity(HttpStatus.CREATED);
 		} catch (Exception e) {
@@ -70,16 +94,5 @@ public class TrackController {
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-	}
-
-	@InitBinder
-	public void dataBinding(WebDataBinder binder) {
-		binder.registerCustomEditor(User.class, "uploadUser", new PropertyEditorSupport() {
-			@Override
-			public void setAsText(String text) {
-				User user = userService.getById(UUID.fromString(text));
-				setValue(user);
-			}
-		});
 	}
 }

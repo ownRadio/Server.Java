@@ -23,10 +23,13 @@ import ownradio.util.ResourceUtil;
 import java.io.File;
 import java.util.UUID;
 
+import static org.hamcrest.core.Is.is;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.fileUpload;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ownradio.util.ResourceUtil.UPLOAD_DIR;
 
@@ -92,6 +95,7 @@ public class TrackControllerTest {
 				.param("filePath", PATH)
 				.param("deviceId", DEVICE_UUID.toString())
 		)
+				.andDo(print())
 				.andExpect(
 						status().isCreated()
 				);
@@ -107,6 +111,7 @@ public class TrackControllerTest {
 				.param("filePath", PATH)
 				.param("deviceId", DEVICE_UUID.toString())
 		)
+				.andDo(print())
 				.andExpect(
 						status().isBadRequest()
 				);
@@ -117,8 +122,12 @@ public class TrackControllerTest {
 		given(this.trackService.getById(TRACK_UUID)).willReturn(track);
 
 		mockMvc.perform(get("/api/v2/tracks/" + TRACK_UUID).accept(MediaType.TEXT_PLAIN))
+				.andDo(print())
 				.andExpect(
 						status().isOk()
+				)
+				.andExpect(
+						header().string("Content-Type", is("audio/mpeg"))
 				)
 				.andExpect(
 						content().string("Text")
@@ -131,6 +140,7 @@ public class TrackControllerTest {
 		given(this.trackService.getById(TRACK_UUID)).willReturn(null);
 
 		mockMvc.perform(get("/api/v2/tracks/" + TRACK_UUID).accept(MediaType.TEXT_PLAIN))
+				.andDo(print())
 				.andExpect(
 						status().isNotFound()
 				);
@@ -141,8 +151,12 @@ public class TrackControllerTest {
 		given(this.trackService.getNextTrackId(DEVICE_UUID)).willReturn(TRACK_UUID);
 
 		mockMvc.perform(get("/api/v2/tracks/" + DEVICE_UUID + "/next"))
+				.andDo(print())
 				.andExpect(
 						status().isOk()
+				)
+				.andExpect(
+						header().string("Content-Type", is("audio/mpeg"))
 				)
 				.andExpect(
 						content().string(mapper.writeValueAsString(TRACK_UUID))
@@ -155,6 +169,7 @@ public class TrackControllerTest {
 		given(this.trackService.getNextTrackId(DEVICE_UUID)).willReturn(null);
 
 		mockMvc.perform(get("/api/v2/tracks/" + DEVICE_UUID + "/next"))
+				.andDo(print())
 				.andExpect(
 						status().isNotFound()
 				);

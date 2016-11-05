@@ -24,6 +24,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -50,7 +51,6 @@ public class HistoryControllerTest {
 
 	private ObjectMapper mapper = new ObjectMapper();
 
-	private History history;
 	private User user;
 	private Track track;
 	private Device device;
@@ -58,7 +58,6 @@ public class HistoryControllerTest {
 	@Before
 	public void setUp() throws Exception {
 		user = new User();
-		history = new History();
 		track = new Track();
 		device = new Device();
 	}
@@ -74,6 +73,7 @@ public class HistoryControllerTest {
 				.param("isListen", "1")
 				.param("method", "method")
 		)
+				.andDo(print())
 				.andExpect(
 						status().isOk()
 				);
@@ -92,6 +92,7 @@ public class HistoryControllerTest {
 				.param("isListen", "1")
 				.param("method", "method")
 		)
+				.andDo(print())
 				.andExpect(
 						status().isInternalServerError()
 				);

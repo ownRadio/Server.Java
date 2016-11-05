@@ -3,6 +3,7 @@ package ownradio.web.rest.v2;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -79,7 +80,7 @@ public class TrackController {
 
 		if (track != null) {
 			byte[] bytes = ResourceUtil.read(track.getPath());
-			return new ResponseEntity<>(bytes, HttpStatus.OK);
+			return new ResponseEntity<>(bytes, getHttpAudioHeaders(), HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
@@ -90,9 +91,15 @@ public class TrackController {
 		UUID trackId = trackService.getNextTrackId(deviceId);
 
 		if (trackId != null) {
-			return new ResponseEntity<>(trackId, HttpStatus.OK);
+			return new ResponseEntity<>(trackId, getHttpAudioHeaders(), HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
+	}
+
+	private HttpHeaders getHttpAudioHeaders() {
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.add("Content-Type", "audio/mpeg");
+		return responseHeaders;
 	}
 }

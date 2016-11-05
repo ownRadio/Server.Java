@@ -57,15 +57,22 @@ BEGIN
 
     -- Добавляем нового пользователя
     INSERT INTO users (id, name, created_at) SELECT
-                                   i_userid,
-                                   ''New user name'', now();
+                                               i_userid,
+                                               ''New user name'',
+                                               now();
 
     -- Добавляем новое устройство
     INSERT INTO devices (id, user_id, name, created_at) SELECT
-                                              i_deviceid,
-                                              i_userid,
-                                              ''New device name'', now();
-
+                                                          i_deviceid,
+                                                          i_userid,
+                                                          ''New device name'',
+                                                          now();
+  ELSE
+    SELECT (SELECT user_id
+     FROM devices
+     WHERE id = i_deviceid
+     LIMIT 1)
+     INTO i_userid;
   END IF;
 
   -- Добавляем трек в базу данных

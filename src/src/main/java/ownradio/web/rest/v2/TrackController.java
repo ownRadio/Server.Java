@@ -91,7 +91,7 @@ public class TrackController {
 		UUID trackId = trackService.getNextTrackId(deviceId);
 
 		if (trackId != null) {
-			return new ResponseEntity<>(trackId, getHttpAudioHeaders(), HttpStatus.OK);
+			return new ResponseEntity<>(trackId, HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}

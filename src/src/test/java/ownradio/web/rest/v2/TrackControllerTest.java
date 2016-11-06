@@ -156,9 +156,6 @@ public class TrackControllerTest {
 						status().isOk()
 				)
 				.andExpect(
-						header().string("Content-Type", is("audio/mpeg"))
-				)
-				.andExpect(
 						content().string(mapper.writeValueAsString(TRACK_UUID))
 				);
 

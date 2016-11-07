@@ -121,7 +121,7 @@ public class TrackControllerTest {
 	public void getTrackStatusIsOk() throws Exception {
 		given(this.trackService.getById(TRACK_UUID)).willReturn(track);
 
-		mockMvc.perform(get("/api/v2/tracks/" + TRACK_UUID).accept(MediaType.TEXT_PLAIN))
+		mockMvc.perform(get("/api/v2/tracks/{trackId}", TRACK_UUID).accept(MediaType.TEXT_PLAIN))
 				.andDo(print())
 				.andExpect(
 						status().isOk()
@@ -139,7 +139,7 @@ public class TrackControllerTest {
 
 		given(this.trackService.getById(TRACK_UUID)).willReturn(null);
 
-		mockMvc.perform(get("/api/v2/tracks/" + TRACK_UUID).accept(MediaType.TEXT_PLAIN))
+		mockMvc.perform(get("/api/v2/tracks/{trackId}", TRACK_UUID).accept(MediaType.TEXT_PLAIN))
 				.andDo(print())
 				.andExpect(
 						status().isNotFound()
@@ -150,7 +150,7 @@ public class TrackControllerTest {
 	public void getNextTrackIdIsOk() throws Exception {
 		given(this.trackService.getNextTrackId(DEVICE_UUID)).willReturn(TRACK_UUID);
 
-		mockMvc.perform(get("/api/v2/tracks/" + DEVICE_UUID + "/next"))
+		mockMvc.perform(get("/api/v2/tracks/{deviceId}/next", DEVICE_UUID))
 				.andDo(print())
 				.andExpect(
 						status().isOk()
@@ -165,7 +165,7 @@ public class TrackControllerTest {
 	public void getNextTrackIdIsNotFound() throws Exception {
 		given(this.trackService.getNextTrackId(DEVICE_UUID)).willReturn(null);
 
-		mockMvc.perform(get("/api/v2/tracks/" + DEVICE_UUID + "/next"))
+		mockMvc.perform(get("/api/v2/tracks/{deviceId}/next", DEVICE_UUID))
 				.andDo(print())
 				.andExpect(
 						status().isNotFound()

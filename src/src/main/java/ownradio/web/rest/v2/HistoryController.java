@@ -42,6 +42,10 @@ public class HistoryController {
 			Track track = trackService.getById(trackId);
 			Device device = deviceService.getById(deviceId);
 
+			if (track == null || device == null) {
+				throw new RuntimeException("Track or Device is null");
+			}
+
 			history.setTrack(track);
 			history.setDevice(device);
 

@@ -37,13 +37,17 @@ public class TrackServiceImpl implements TrackService {
 	@Override
 	@Transactional
 	public void save(Track track, MultipartFile file) {
-		trackRepository.save(track);
+		boolean result = trackRepository.registerTrack(track.getId(), track.getLocalDevicePathUpload(), track.getPath(), track.getDevice().getId());
+		if (!result) {
+			throw new RuntimeException();
+		}
 
-		String dirName = track.getUploadUser().getId().toString();
-		String fileName = track.getId() + "." + StringUtils.getFilenameExtension(file.getOriginalFilename());
+		Track storeTrack = trackRepository.findOne(track.getId());
+
+		String dirName = storeTrack.getDevice().getUser().getId().toString();
+		String fileName = storeTrack.getId() + "." + StringUtils.getFilenameExtension(file.getOriginalFilename());
 		String filePath = ResourceUtil.save(dirName, fileName, file);
 
-		track.setPath(filePath);
-		trackRepository.flush();
+		storeTrack.setPath(filePath);
 	}
 }

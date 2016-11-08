@@ -17,7 +17,6 @@ import ownradio.service.DeviceService;
 import ownradio.service.HistoryService;
 import ownradio.service.TrackService;
 import ownradio.service.UserService;
-import ownradio.web.rest.v2.HistoryController;
 
 import java.util.UUID;
 
@@ -25,6 +24,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -51,7 +51,6 @@ public class HistoryControllerTest {
 
 	private ObjectMapper mapper = new ObjectMapper();
 
-	private History history;
 	private User user;
 	private Track track;
 	private Device device;
@@ -59,7 +58,6 @@ public class HistoryControllerTest {
 	@Before
 	public void setUp() throws Exception {
 		user = new User();
-		history = new History();
 		track = new Track();
 		device = new Device();
 	}
@@ -70,14 +68,12 @@ public class HistoryControllerTest {
 		given(this.trackService.getById(TRACK_UUID)).willReturn(track);
 		given(this.deviceService.getById(DEVICE_UUID)).willReturn(device);
 
-		mockMvc.perform(post("/api/v2/histories")
-				.param("user", USER_UUID.toString())
-				.param("track", TRACK_UUID.toString())
+		mockMvc.perform(post("/api/v2/histories/{deviceId}/{trackId}", DEVICE_UUID, TRACK_UUID)
 				.param("lastListen", "12/12/2016")
-				.param("listen", "1")
+				.param("isListen", "1")
 				.param("method", "method")
-				.param("device", DEVICE_UUID.toString())
 		)
+				.andDo(print())
 				.andExpect(
 						status().isOk()
 				);
@@ -91,14 +87,12 @@ public class HistoryControllerTest {
 
 		doThrow(RuntimeException.class).when(this.historyService).save(any(History.class));
 
-		mockMvc.perform(post("/api/v2/histories")
-				.param("user", USER_UUID.toString())
-				.param("track", TRACK_UUID.toString())
+		mockMvc.perform(post("/api/v2/histories/{deviceId}/{trackId}", DEVICE_UUID, TRACK_UUID)
 				.param("lastListen", "12/12/2016")
-				.param("listen", "1")
+				.param("isListen", "1")
 				.param("method", "method")
-				.param("device", DEVICE_UUID.toString())
 		)
+				.andDo(print())
 				.andExpect(
 						status().isInternalServerError()
 				);

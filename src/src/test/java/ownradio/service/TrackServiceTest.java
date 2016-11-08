@@ -66,7 +66,6 @@ public class TrackServiceTest {
 	@Test
 	public void save() throws Exception {
 		MockMultipartFile correctFile = new MockMultipartFile("file", "test.mp3", "text/plain", "Text".getBytes());
-		;
 
 		given(this.trackRepository.registerTrack(expected.getId(), expected.getLocalDevicePathUpload(), expected.getPath(), expected.getDevice().getId())).willReturn(true);
 		given(this.trackRepository.findOne(expected.getId())).willReturn(expected);

@@ -20,14 +20,14 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "download_tracks")
+@Table(name = "downloadtracks")
 public class DownloadTrack extends AbstractEntity {
 	@ManyToOne
-	@JoinColumn(name = "device_id")
+	@JoinColumn(name = "deviceid")
 	private Device device;
 
 	@ManyToOne
-	@JoinColumn(name = "track_id")
+	@JoinColumn(name = "trackid")
 	private Track track;
 
 }

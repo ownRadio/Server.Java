@@ -1,10 +1,43 @@
 CREATE OR REPLACE FUNCTION getnexttrackid(IN i_deviceid UUID)
   RETURNS SETOF UUID AS
 '
-BEGIN
+DECLARE
+  i_userid uuid = i_deviceid;
+ BEGIN
+  -- Добавляем устройство, если его еще не существует
+  -- Если ID устройства еще нет в БД
+  IF NOT EXISTS(SELECT recid
+                FROM devices
+                WHERE recid = i_deviceid)
+  THEN
+
+    -- Добавляем нового пользователя
+    INSERT INTO users (recid, recname, reccreated) SELECT
+                                                     i_userid,
+                                                     ''New user recname'',
+                                                     now();
+
+    -- Добавляем новое устройство
+    INSERT INTO devices (recid, userid, recname, reccreated) SELECT
+                                                               i_deviceid,
+                                                               i_userid,
+                                                               ''New device recname'',
+                                                               now();
+  ELSE
+    SELECT (SELECT userid
+            FROM devices
+            WHERE recid = i_deviceid
+            LIMIT 1)
+    INTO i_userid;
+  END IF;
+
   RETURN QUERY
-  SELECT id
+  SELECT tracks.recid
   FROM tracks
+    LEFT JOIN
+    ratings
+      ON tracks.recid = ratings.trackid AND ratings.userid = i_userid
+  WHERE ratings.ratingsum >=0 OR ratings.ratingsum is null
   ORDER BY RANDOM()
   LIMIT 1;
 END;
@@ -30,13 +63,11 @@ CREATE OR REPLACE FUNCTION registertrack(
   RETURNS BOOLEAN AS
 '
 DECLARE
-  i_userid    UUID;
+  i_userid    UUID = i_deviceid;
   i_historyid UUID;
   i_ratingid  UUID;
 BEGIN
   CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-  SELECT uuid_generate_v1()
-  INTO i_userid;
   SELECT uuid_generate_v1()
   INTO i_historyid;
   SELECT uuid_generate_v1()
@@ -50,41 +81,41 @@ BEGIN
 
   -- Добавляем устройство, если его еще не существует
   -- Если ID устройства еще нет в БД
-  IF NOT EXISTS(SELECT id
+  IF NOT EXISTS(SELECT recid
                 FROM devices
-                WHERE id = i_deviceid)
+                WHERE recid = i_deviceid)
   THEN
 
     -- Добавляем нового пользователя
-    INSERT INTO users (id, name, created_at) SELECT
+    INSERT INTO users (recid, recname, reccreated) SELECT
                                                i_userid,
-                                               ''New user name'',
+                                               ''New user recname'',
                                                now();
 
     -- Добавляем новое устройство
-    INSERT INTO devices (id, user_id, name, created_at) SELECT
+    INSERT INTO devices (recid, userid, recname, reccreated) SELECT
                                                           i_deviceid,
                                                           i_userid,
-                                                          ''New device name'',
+                                                          ''New device recname'',
                                                           now();
   ELSE
-    SELECT (SELECT user_id
+    SELECT (SELECT userid
      FROM devices
-     WHERE id = i_deviceid
+     WHERE recid = i_deviceid
      LIMIT 1)
      INTO i_userid;
   END IF;
 
   -- Добавляем трек в базу данных
-  INSERT INTO tracks (id, local_device_path_upload, path, device_id, created_at)
+  INSERT INTO tracks (recid, localdevicepathupload, path, deviceid, reccreated)
   VALUES (i_trackid, i_localdevicepathupload, i_path, i_deviceid, now());
 
   -- Добавляем запись о прослушивании трека в таблицу истории прослушивания
-  INSERT INTO histories (id, device_id, track_id, is_listen, last_listen, method, created_at)
+  INSERT INTO histories (recid, deviceid, trackid, islisten, lastlisten, method, reccreated)
   VALUES (i_historyid, i_deviceid, i_trackid, 1, now(), ''method'', now());
 
   -- Добавляем запись в таблицу рейтингов
-  INSERT INTO ratings (id, user_id, track_id, last_listen, rating_sum, created_at)
+  INSERT INTO ratings (recid, userid, trackid, lastlisten, ratingsum, reccreated)
   VALUES (i_ratingid, i_userid, i_trackid, now(), 1, now());
 
   RETURN TRUE;

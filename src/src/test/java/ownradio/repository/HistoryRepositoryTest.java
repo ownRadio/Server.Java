@@ -42,25 +42,25 @@ public class HistoryRepositoryTest {
 
 	@Test
 	public void createdAt() throws Exception {
-		assertThat(history.getCreatedAt(), not(nullValue()));
-		assertThat(history.getCreatedAt().toString(), is(new Date().toString()));
+		assertThat(history.getReccreated(), not(nullValue()));
+		assertThat(history.getReccreated().toString(), is(new Date().toString()));
 	}
 
 	@Test
 	public void updatedAt() throws Exception {
-		assertThat(history.getCreatedAt(), not(nullValue()));
-		assertThat(history.getCreatedAt().toString(), is(new Date().toString()));
-		assertThat(history.getUpdatedAt(), is(nullValue()));
+		assertThat(history.getReccreated(), not(nullValue()));
+		assertThat(history.getReccreated().toString(), is(new Date().toString()));
+		assertThat(history.getRecupdated(), is(nullValue()));
 
-		History storeHistory = historyRepository.findOne(history.getId());
-		storeHistory.setIsListen(1);
+		History storeHistory = historyRepository.findOne(history.getRecid());
+		storeHistory.setIslisten(1);
 		historyRepository.saveAndFlush(storeHistory);
 
-		assertThat(storeHistory.getCreatedAt(), not(nullValue()));
-		assertThat(storeHistory.getCreatedAt().toString(), is(history.getCreatedAt().toString()));
+		assertThat(storeHistory.getReccreated(), not(nullValue()));
+		assertThat(storeHistory.getReccreated().toString(), is(history.getReccreated().toString()));
 
-		assertThat(storeHistory.getUpdatedAt(), not(nullValue()));
-		assertThat(storeHistory.getUpdatedAt().toString(), is(new Date().toString()));
+		assertThat(storeHistory.getRecupdated(), not(nullValue()));
+		assertThat(storeHistory.getRecupdated().toString(), is(new Date().toString()));
 	}
 
 

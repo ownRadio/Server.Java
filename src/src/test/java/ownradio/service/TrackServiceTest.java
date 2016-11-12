@@ -39,13 +39,13 @@ public class TrackServiceTest {
 	public void setUp() throws Exception {
 		trackService = new TrackServiceImpl(trackRepository);
 		expected = new Track();
-		expected.setId(trackId);
+		expected.setRecid(trackId);
 
 		User user = new User();
-		user.setId(userId);
+		user.setRecid(userId);
 
 		Device device = new Device(user, "123");
-		device.setId(deviceId);
+		device.setRecid(deviceId);
 		expected.setDevice(device);
 	}
 
@@ -60,15 +60,15 @@ public class TrackServiceTest {
 
 		UUID actual = trackService.getNextTrackId(trackId);
 
-		assertThat(actual, equalTo(expected.getId()));
+		assertThat(actual, equalTo(expected.getRecid()));
 	}
 
 	@Test
 	public void save() throws Exception {
 		MockMultipartFile correctFile = new MockMultipartFile("file", "test.mp3", "text/plain", "Text".getBytes());
 
-		given(this.trackRepository.registerTrack(expected.getId(), expected.getLocalDevicePathUpload(), expected.getPath(), expected.getDevice().getId())).willReturn(true);
-		given(this.trackRepository.findOne(expected.getId())).willReturn(expected);
+		given(this.trackRepository.registerTrack(expected.getRecid(), expected.getLocaldevicepathupload(), expected.getPath(), expected.getDevice().getRecid())).willReturn(true);
+		given(this.trackRepository.findOne(expected.getRecid())).willReturn(expected);
 		trackService.save(expected, correctFile);
 
 		assertThat(new File(expected.getPath()).exists(), is(true));

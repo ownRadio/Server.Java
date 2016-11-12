@@ -23,17 +23,17 @@ import java.util.Date;
 @Table(name = "ratings")
 public class Rating extends AbstractEntity {
 	@ManyToOne
-	@JoinColumn(name = "user_id")
+	@JoinColumn(name = "userid")
 	private User user;
 
 	@ManyToOne
-	@JoinColumn(name = "track_id")
+	@JoinColumn(name = "trackid")
 	private Track track;
 
-	@DateTimeFormat(pattern = "dd/MM/yyyy")
+	@DateTimeFormat(pattern = "dd/MM/yyyy H:m:s")
 	@Column(nullable = false)
-	private Date lastListen;
+	private Date lastlisten;
 
 	@Column(nullable = false)
-	private Integer ratingSum;
+	private Integer ratingsum;
 }

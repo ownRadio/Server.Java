@@ -47,7 +47,7 @@ public class TrackRepositoryTest {
 		Set<UUID> trackSet = new HashSet<>();
 
 		for (int i = 0; i < 3; i++) {
-			UUID track = trackRepository.getNextTrackId(device.getId());
+			UUID track = trackRepository.getNextTrackId(device.getRecid());
 			trackSet.add(track);
 		}
 

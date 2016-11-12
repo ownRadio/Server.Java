@@ -23,6 +23,6 @@ public class InitDb implements CommandLineRunner {
 	@Override
 	public void run(String... strings) throws Exception {
 		User user = userService.save(new User());
-		log.debug("User id: {}", user.getId());
+		log.debug("User recid: {}", user.getRecid());
 	}
 }

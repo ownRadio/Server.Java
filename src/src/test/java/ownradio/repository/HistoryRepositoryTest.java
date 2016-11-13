@@ -53,7 +53,7 @@ public class HistoryRepositoryTest {
 		assertThat(history.getRecupdated(), is(nullValue()));
 
 		History storeHistory = historyRepository.findOne(history.getRecid());
-		storeHistory.setIslisten(1);
+		storeHistory.setIsListen(1);
 		historyRepository.saveAndFlush(storeHistory);
 
 		assertThat(storeHistory.getReccreated(), not(nullValue()));

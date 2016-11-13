@@ -69,8 +69,8 @@ public class HistoryControllerTest {
 		given(this.deviceService.getById(DEVICE_UUID)).willReturn(device);
 
 		mockMvc.perform(post("/api/v2/histories/{deviceId}/{trackId}", DEVICE_UUID, TRACK_UUID)
-				.param("lastlisten", "12/12/2016 11:11:11")
-				.param("islisten", "1")
+				.param("lastListen", "12/12/2016 11:11:11")
+				.param("isListen", "1")
 				.param("method", "method")
 		)
 				.andDo(print())
@@ -88,8 +88,8 @@ public class HistoryControllerTest {
 		doThrow(RuntimeException.class).when(this.historyService).save(any(History.class));
 
 		mockMvc.perform(post("/api/v2/histories/{deviceId}/{trackId}", DEVICE_UUID, TRACK_UUID)
-				.param("lastlisten", "12/12/2016 11:11:11")
-				.param("islisten", "1")
+				.param("lastListen", "12/12/2016 11:11:11")
+				.param("isListen", "1")
 				.param("method", "method")
 		)
 				.andDo(print())

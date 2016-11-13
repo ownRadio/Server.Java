@@ -28,11 +28,11 @@ public class History extends AbstractEntity {
 	private Track track;
 
 	@DateTimeFormat(pattern = "dd/MM/yyyy H:m:s")
-	@Column(nullable = false)
-	private Date lastlisten;
+	@Column(name = "lastlisten", nullable = false)
+	private Date lastListen;
 
-	@Column(nullable = false)
-	private int islisten; // 1, -1
+	@Column(name = "islisten", nullable = false)
+	private int isListen; // 1, -1
 
 	@Column(nullable = false)
 	private String method;

@@ -23,10 +23,10 @@ public class Track extends AbstractEntity {
 	private String path;
 
 	@ManyToOne
-	@JoinColumn(name = "device_id")
+	@JoinColumn(name = "deviceid")
 	private Device device;
 
 	@Column(nullable = false)
-	private String localDevicePathUpload;
+	private String localdevicepathupload;
 
 }

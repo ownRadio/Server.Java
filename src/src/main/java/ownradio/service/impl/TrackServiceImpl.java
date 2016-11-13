@@ -29,7 +29,7 @@ public class TrackServiceImpl implements TrackService {
 	}
 
 	@Override
-	@Transactional(readOnly = true)
+	@Transactional
 	public UUID getNextTrackId(UUID deviceId) {
 		return trackRepository.getNextTrackId(deviceId);
 	}
@@ -37,15 +37,15 @@ public class TrackServiceImpl implements TrackService {
 	@Override
 	@Transactional
 	public void save(Track track, MultipartFile file) {
-		boolean result = trackRepository.registerTrack(track.getId(), track.getLocalDevicePathUpload(), track.getPath(), track.getDevice().getId());
+		boolean result = trackRepository.registerTrack(track.getRecid(), track.getLocaldevicepathupload(), track.getPath(), track.getDevice().getRecid());
 		if (!result) {
 			throw new RuntimeException();
 		}
 
-		Track storeTrack = trackRepository.findOne(track.getId());
+		Track storeTrack = trackRepository.findOne(track.getRecid());
 
-		String dirName = storeTrack.getDevice().getUser().getId().toString();
-		String fileName = storeTrack.getId() + "." + StringUtils.getFilenameExtension(file.getOriginalFilename());
+		String dirName = storeTrack.getDevice().getUser().getRecid().toString();
+		String fileName = storeTrack.getRecid() + "." + StringUtils.getFilenameExtension(file.getOriginalFilename());
 		String filePath = ResourceUtil.save(dirName, fileName, file);
 
 		storeTrack.setPath(filePath);

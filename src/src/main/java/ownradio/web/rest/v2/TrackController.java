@@ -45,14 +45,14 @@ public class TrackController {
 
 		public Track getTrack() {
 			Device device = new Device();
-			device.setId(deviceId);
+			device.setRecid(deviceId);
 
 			Track track = new Track();
-			track.setId(fileGuid);
-			track.setName(fileName);
+			track.setRecid(fileGuid);
+			track.setRecname(fileName);
 			track.setDevice(device);
 			track.setPath("---");
-			track.setLocalDevicePathUpload(filePath);
+			track.setLocaldevicepathupload(filePath);
 
 			return track;
 		}

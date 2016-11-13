@@ -23,8 +23,12 @@ import javax.persistence.Table;
 @Table(name = "devices")
 public class Device extends AbstractEntity {
 	@ManyToOne
-	@JoinColumn(name = "user_id")
+	@JoinColumn(name = "userid")
 	private User user;
 
-	private String name;
+//	private String name;
+	public Device (User user, String name){
+		setRecname(name);
+		setUser(user);
+	}
 }

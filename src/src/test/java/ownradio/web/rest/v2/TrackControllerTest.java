@@ -62,8 +62,8 @@ public class TrackControllerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		user.setId(USER_UUID);
-		device.setId(DEVICE_UUID);
+		user.setRecid(USER_UUID);
+		device.setRecid(DEVICE_UUID);
 		device.setUser(user);
 
 		track = new Track(PATH, device, "---");

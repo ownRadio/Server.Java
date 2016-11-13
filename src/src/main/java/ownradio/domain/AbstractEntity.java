@@ -26,21 +26,21 @@ public abstract class AbstractEntity implements Serializable {
 	@GeneratedValue(generator = "uuid")
 	@GenericGenerator(name = "uuid", strategy = "uuid2")
 	@Column(unique = true)
-	private UUID id;
+	private UUID recid;
 
-	private String name;
+	private String recname;
 
-	private Date createdAt;
-	private Date updatedAt;
+	private Date reccreated;
+	private Date recupdated;
 
 	@PrePersist
 	public void beforePersist() {
-		setCreatedAt(new Date());
+		setReccreated(new Date());
 	}
 
 	@PreUpdate
 	public void beforeUpdate() {
-		setUpdatedAt(new Date());
+		setRecupdated(new Date());
 	}
 
 	@Override
@@ -50,12 +50,12 @@ public abstract class AbstractEntity implements Serializable {
 
 		AbstractEntity that = (AbstractEntity) o;
 
-		return id != null ? id.equals(that.id) : that.id == null;
+		return recid != null ? recid.equals(that.recid) : that.recid == null;
 
 	}
 
 	@Override
 	public int hashCode() {
-		return id != null ? id.hashCode() : 0;
+		return recid != null ? recid.hashCode() : 0;
 	}
 }

@@ -2,6 +2,7 @@ package ownradio.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ownradio.domain.History;
 import ownradio.domain.Rating;
 import ownradio.repository.HistoryRepository;
@@ -20,7 +21,7 @@ public class HistoryServiceImpl implements HistoryService {
 		this.ratingRepository = ratingRepository;
 	}
 
-
+	@Transactional
 	@Override
 	public void save(History history) {
 		historyRepository.saveAndFlush(history);

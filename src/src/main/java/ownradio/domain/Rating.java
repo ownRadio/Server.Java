@@ -30,7 +30,7 @@ public class Rating extends AbstractEntity {
 	@JoinColumn(name = "trackid")
 	private Track track;
 
-	@DateTimeFormat(pattern = "dd/MM/yyyy H:m:s")
+	@DateTimeFormat(pattern = "dd/MM/yyyy")
 	@Column(nullable = false)
 	private Date lastlisten;
 

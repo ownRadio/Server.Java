@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -27,15 +28,18 @@ public class History extends AbstractEntity {
 	@JoinColumn(name = "trackid")
 	private Track track;
 
-	@DateTimeFormat(pattern = "dd/MM/yyyy")
+	@DateTimeFormat(pattern = "dd-MM-yyyy'T'H:m:s")
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "lastlisten", nullable = false)
-	private Date lastListen;
+	private Calendar lastListen;
 
 	@Column(name = "islisten", nullable = false)
 	private int isListen; // 1, -1
 
-	@Column(nullable = false)
+//	@Column(nullable = false)
 	private String method;
+
+	private Integer methodid;
 
 	@ManyToOne
 	@JoinColumn(name = "deviceid")

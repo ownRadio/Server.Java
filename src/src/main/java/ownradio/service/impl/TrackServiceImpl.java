@@ -5,11 +5,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import ownradio.domain.NextTrack;
 import ownradio.domain.Track;
 import ownradio.repository.TrackRepository;
 import ownradio.service.TrackService;
 import ownradio.util.ResourceUtil;
 
+import java.sql.ResultSet;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -32,6 +36,15 @@ public class TrackServiceImpl implements TrackService {
 	@Transactional
 	public UUID getNextTrackId(UUID deviceId) {
 		return trackRepository.getNextTrackId(deviceId);
+	}
+
+	@Override
+	@Transactional
+	public NextTrack getNextTrackIdV2(UUID deviceId) {
+		NextTrack nextTrack = new NextTrack();
+		nextTrack.setTrackid(trackRepository.getNextTrackV2(deviceId));
+		nextTrack.setMethodid(1);//!!!
+		return nextTrack;
 	}
 
 	@Override

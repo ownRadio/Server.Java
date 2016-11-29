@@ -2,6 +2,7 @@ package ownradio.web.rest.v2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,7 +67,7 @@ public class TrackControllerTest {
 		device.setRecid(DEVICE_UUID);
 		device.setUser(user);
 
-		track = new Track(PATH, device, "---");
+		track = new Track(PATH, device, "---", 0,  "", 0, null, null, null);
 
 		String requestParam = "musicFile";
 		String originalFilename = "test.mp3";
@@ -87,13 +88,21 @@ public class TrackControllerTest {
 	public void saveStatusIsOk() throws Exception {
 		given(this.deviceService.getById(DEVICE_UUID)).willReturn(device);
 
+		JSONObject obj = new JSONObject();
+		obj.put("fileGuid", TRACK_UUID.toString());
+		obj.put("fileName", correctFile.getOriginalFilename());
+		obj.put("filePath", PATH);
+		obj.put("deviceId", DEVICE_UUID.toString());
+
 		mockMvc.perform(fileUpload("/api/v2/tracks")
 				.file(correctFile)
 				.accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
-				.param("fileGuid", TRACK_UUID.toString())
-				.param("fileName", correctFile.getOriginalFilename())
-				.param("filePath", PATH)
-				.param("deviceId", DEVICE_UUID.toString())
+				.content(obj.toString())
+				.contentType(MediaType.MULTIPART_FORM_DATA)
+//				.param("fileGuid", TRACK_UUID.toString())
+//				.param("fileName", correctFile.getOriginalFilename())
+//				.param("filePath", PATH)
+//				.param("deviceId", DEVICE_UUID.toString())
 		)
 				.andDo(print())
 				.andExpect(

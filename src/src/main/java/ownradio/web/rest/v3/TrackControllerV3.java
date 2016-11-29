@@ -1,4 +1,4 @@
-package ownradio.web.rest.v2;
+package ownradio.web.rest.v3;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -9,27 +9,29 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ownradio.domain.Device;
+import ownradio.domain.NextTrack;
 import ownradio.domain.Track;
+import ownradio.repository.TrackRepository;
 import ownradio.service.TrackService;
 import ownradio.util.ResourceUtil;
 
-import java.util.UUID;
+import java.util.*;
 
 /**
- * WEB API для работы с треками
- *
- * @author Alpenov Tanat
+ * Created by a.polunina on 28.11.2016.
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v2/tracks")
-public class TrackController {
+@RequestMapping(value = "/v3/tracks")
+public class TrackControllerV3 {
 
 	private final TrackService trackService;
+	private final TrackRepository trackRepository;
 
 	@Autowired
-	public TrackController(TrackService trackService) {
+	public TrackControllerV3(TrackService trackService, TrackRepository trackRepository) {
 		this.trackService = trackService;
+		this.trackRepository = trackRepository;
 	}
 
 	@Data
@@ -56,7 +58,7 @@ public class TrackController {
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
-	public ResponseEntity save(TrackDTO trackDTO) {
+	public ResponseEntity save(ownradio.web.rest.v3.TrackControllerV3.TrackDTO trackDTO) {
 		if (trackDTO.getMusicFile().isEmpty()) {
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		}
@@ -83,20 +85,30 @@ public class TrackController {
 		}
 	}
 
-	@RequestMapping(value = "/{deviceId}/next", method = RequestMethod.GET)
-	public ResponseEntity<?> getNextTrackId(@PathVariable UUID deviceId) {
-		UUID trackId = trackService.getNextTrackId(deviceId);
-
-		if (trackId != null) {
-			return new ResponseEntity<>(trackId, HttpStatus.OK);
-		} else {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
-	}
-
 	private HttpHeaders getHttpAudioHeaders() {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "audio/mpeg");
 		return responseHeaders;
 	}
+
+	@RequestMapping(value = "/{deviceId}/next", method = RequestMethod.GET)
+	public ResponseEntity<?> getNextTrack(@PathVariable UUID deviceId) {
+		NextTrack nextTrack = trackService.getNextTrackIdV2(deviceId);
+		UUID trackId = nextTrack.getTrackid();
+
+		if (trackId != null) {
+			Track track = trackRepository.findOne(trackId);
+			log.info("{} {} {}", track.getRecname(), track.getArtist(), track.getLength());
+			Map<String, String> trackInfo = new HashMap<>();
+			trackInfo.put("id", trackId.toString());
+			trackInfo.put("length", String.valueOf(track.getLength()));
+			trackInfo.put("name", track.getRecname());
+			trackInfo.put("artist", track.getArtist());
+			trackInfo.put("methodid", nextTrack.getMethodid().toString());
+			return new ResponseEntity<>(trackInfo, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
 }

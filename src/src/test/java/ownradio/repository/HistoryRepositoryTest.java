@@ -12,6 +12,7 @@ import ownradio.domain.History;
 import ownradio.domain.Track;
 import ownradio.domain.User;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -34,22 +35,22 @@ public class HistoryRepositoryTest {
 	public void setUp() throws Exception {
 		User user = entityManager.persist(new User());
 		Device device = entityManager.persist(new Device(user, "1"));
-		Track track = entityManager.persist(new Track("1", device, "1"));
+		Track track = entityManager.persist(new Track("1", device, "1", 0, "", 0, null, null, null));
 
-		history = new History(track, new Date(), 0, "post", device);
+		history = new History(track, Calendar.getInstance(), 0, "post", 1, device);
 		entityManager.persist(history);
 	}
 
 	@Test
 	public void createdAt() throws Exception {
 		assertThat(history.getReccreated(), not(nullValue()));
-		assertThat(history.getReccreated().toString(), is(new Date().toString()));
+		assertThat(history.getReccreated().getTime().toString(), is(Calendar.getInstance().getTime().toString()));
 	}
 
 	@Test
 	public void updatedAt() throws Exception {
 		assertThat(history.getReccreated(), not(nullValue()));
-		assertThat(history.getReccreated().toString(), is(new Date().toString()));
+		assertThat(history.getReccreated().getTime().toString(), is(Calendar.getInstance().getTime().toString()));
 		assertThat(history.getRecupdated(), is(nullValue()));
 
 		History storeHistory = historyRepository.findOne(history.getRecid());
@@ -57,10 +58,10 @@ public class HistoryRepositoryTest {
 		historyRepository.saveAndFlush(storeHistory);
 
 		assertThat(storeHistory.getReccreated(), not(nullValue()));
-		assertThat(storeHistory.getReccreated().toString(), is(history.getReccreated().toString()));
+		assertThat(storeHistory.getReccreated().getTime().toString(), is(history.getReccreated().getTime().toString()));
 
 		assertThat(storeHistory.getRecupdated(), not(nullValue()));
-		assertThat(storeHistory.getRecupdated().toString(), is(new Date().toString()));
+		assertThat(storeHistory.getRecupdated().getTime().toString(), is(Calendar.getInstance().getTime().toString()));
 	}
 
 

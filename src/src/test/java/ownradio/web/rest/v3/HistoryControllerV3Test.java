@@ -1,8 +1,6 @@
-package ownradio.web.rest.v2;
+package ownradio.web.rest.v3;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.JSONPObject;
-import com.oracle.webservices.internal.api.message.ContentType;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,9 +19,11 @@ import ownradio.service.DeviceService;
 import ownradio.service.HistoryService;
 import ownradio.service.TrackService;
 import ownradio.service.UserService;
+import ownradio.web.rest.v2.HistoryController;
 
 import java.util.UUID;
 
+import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -31,9 +31,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Created by a.polunina on 28.11.2016.
+ */
+
 @RunWith(SpringRunner.class)
 @WebMvcTest(HistoryController.class)
-public class HistoryControllerTest {
+public class HistoryControllerV3Test {
 	public static final UUID TRACK_UUID = UUID.randomUUID();
 	public static final UUID USER_UUID = UUID.randomUUID();
 	public static final UUID DEVICE_UUID = UUID.randomUUID();
@@ -78,8 +82,8 @@ public class HistoryControllerTest {
 		obj.put("method", "method");
 
 		mockMvc.perform(post("/api/v2/histories/{deviceId}/{trackId}", DEVICE_UUID, TRACK_UUID)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(obj.toString())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(obj.toString())
 //				.param("lastListen", "2016-11-28 12:34:56")
 //				.param("isListen", "1")
 //				.param("method", "method")
@@ -104,8 +108,8 @@ public class HistoryControllerTest {
 		obj.put("method", "method");
 
 		mockMvc.perform(post("/api/v2/histories/{deviceId}/{trackId}", DEVICE_UUID, TRACK_UUID)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(obj.toString())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(obj.toString())
 //				.param("lastListen", "2016-11-28 12:34:56")
 //				.param("isListen", "1")
 //				.param("method", "method")
@@ -115,6 +119,4 @@ public class HistoryControllerTest {
 						status().isInternalServerError()
 				);
 	}
-
-
 }

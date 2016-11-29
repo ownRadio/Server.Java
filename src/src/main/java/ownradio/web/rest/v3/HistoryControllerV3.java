@@ -1,4 +1,4 @@
-package ownradio.web.rest.v2;
+package ownradio.web.rest.v3;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -6,38 +6,30 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import ownradio.domain.Device;
 import ownradio.domain.History;
 import ownradio.domain.Track;
-import ownradio.domain.User;
 import ownradio.service.DeviceService;
 import ownradio.service.HistoryService;
 import ownradio.service.TrackService;
-import ownradio.service.UserService;
 
-import javax.persistence.Column;
-import java.beans.PropertyEditorSupport;
 import java.util.Date;
 import java.util.UUID;
 
 /**
- * WEB API для работы с историей прослушанных треков
- *
- * @author Alpenov Tanat
+ * Created by a.polunina on 28.11.2016.
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v2/histories")
-public class HistoryController {
+@RequestMapping("/v3/histories")
+public class HistoryControllerV3 {
 	private final HistoryService historyService;
 	private final TrackService trackService;
 	private final DeviceService deviceService;
 
 	@Autowired
-	public HistoryController(HistoryService historyService, TrackService trackService, DeviceService deviceService) {
+	public HistoryControllerV3(HistoryService historyService, TrackService trackService, DeviceService deviceService) {
 		this.historyService = historyService;
 		this.trackService = trackService;
 		this.deviceService = deviceService;
@@ -60,9 +52,9 @@ public class HistoryController {
 
 			historyService.save(history);
 
-			return new ResponseEntity(history, HttpStatus.OK);
+			return new ResponseEntity(HttpStatus.OK);
 		} catch (Exception e) {
-			return new ResponseEntity(history, HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 

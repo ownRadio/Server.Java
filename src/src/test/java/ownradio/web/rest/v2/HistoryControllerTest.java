@@ -1,8 +1,6 @@
 package ownradio.web.rest.v2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.JSONPObject;
-import com.oracle.webservices.internal.api.message.ContentType;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;

@@ -94,7 +94,7 @@ public class TrackControllerTest {
 		obj.put("filePath", PATH);
 		obj.put("deviceId", DEVICE_UUID.toString());
 
-		mockMvc.perform(fileUpload("/api/v2/tracks")
+		mockMvc.perform(fileUpload("/v2/tracks")
 				.file(correctFile)
 				.accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
 				.content(obj.toString())
@@ -112,7 +112,7 @@ public class TrackControllerTest {
 
 	@Test
 	public void saveStatusIsBadRequest() throws Exception {
-		mockMvc.perform(fileUpload("/api/v2/tracks")
+		mockMvc.perform(fileUpload("/v2/tracks")
 				.file(emptyFile)
 				.accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
 				.param("fileGuid", TRACK_UUID.toString())
@@ -130,7 +130,7 @@ public class TrackControllerTest {
 	public void getTrackStatusIsOk() throws Exception {
 		given(this.trackService.getById(TRACK_UUID)).willReturn(track);
 
-		mockMvc.perform(get("/api/v2/tracks/{trackId}", TRACK_UUID).accept(MediaType.TEXT_PLAIN))
+		mockMvc.perform(get("/v2/tracks/{trackId}", TRACK_UUID).accept(MediaType.TEXT_PLAIN))
 				.andDo(print())
 				.andExpect(
 						status().isOk()
@@ -148,7 +148,7 @@ public class TrackControllerTest {
 
 		given(this.trackService.getById(TRACK_UUID)).willReturn(null);
 
-		mockMvc.perform(get("/api/v2/tracks/{trackId}", TRACK_UUID).accept(MediaType.TEXT_PLAIN))
+		mockMvc.perform(get("/v2/tracks/{trackId}", TRACK_UUID).accept(MediaType.TEXT_PLAIN))
 				.andDo(print())
 				.andExpect(
 						status().isNotFound()
@@ -159,7 +159,7 @@ public class TrackControllerTest {
 	public void getNextTrackIdIsOk() throws Exception {
 		given(this.trackService.getNextTrackId(DEVICE_UUID)).willReturn(TRACK_UUID);
 
-		mockMvc.perform(get("/api/v2/tracks/{deviceId}/next", DEVICE_UUID))
+		mockMvc.perform(get("/v2/tracks/{deviceId}/next", DEVICE_UUID))
 				.andDo(print())
 				.andExpect(
 						status().isOk()
@@ -174,7 +174,7 @@ public class TrackControllerTest {
 	public void getNextTrackIdIsNotFound() throws Exception {
 		given(this.trackService.getNextTrackId(DEVICE_UUID)).willReturn(null);
 
-		mockMvc.perform(get("/api/v2/tracks/{deviceId}/next", DEVICE_UUID))
+		mockMvc.perform(get("/v2/tracks/{deviceId}/next", DEVICE_UUID))
 				.andDo(print())
 				.andExpect(
 						status().isNotFound()

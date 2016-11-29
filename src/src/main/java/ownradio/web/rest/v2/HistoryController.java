@@ -30,7 +30,7 @@ import java.util.UUID;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v2/histories")
+@RequestMapping("/v2/histories")
 public class HistoryController {
 	private final HistoryService historyService;
 	private final TrackService trackService;

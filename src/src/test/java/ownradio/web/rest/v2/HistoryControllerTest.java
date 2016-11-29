@@ -77,7 +77,7 @@ public class HistoryControllerTest {
 		obj.put("isListen", "1");
 		obj.put("method", "method");
 
-		mockMvc.perform(post("/api/v2/histories/{deviceId}/{trackId}", DEVICE_UUID, TRACK_UUID)
+		mockMvc.perform(post("/v2/histories/{deviceId}/{trackId}", DEVICE_UUID, TRACK_UUID)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(obj.toString())
 //				.param("lastListen", "2016-11-28 12:34:56")
@@ -103,7 +103,7 @@ public class HistoryControllerTest {
 		obj.put("isListen", "1");
 		obj.put("method", "method");
 
-		mockMvc.perform(post("/api/v2/histories/{deviceId}/{trackId}", DEVICE_UUID, TRACK_UUID)
+		mockMvc.perform(post("/v2/histories/{deviceId}/{trackId}", DEVICE_UUID, TRACK_UUID)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(obj.toString())
 //				.param("lastListen", "2016-11-28 12:34:56")

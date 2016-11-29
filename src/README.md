@@ -18,7 +18,7 @@ Web API
 
 ### Загрузка трека на сервер
 
-##### POST /api/v2/tracks
+##### POST /v2/tracks
 * `fileGuid` – UUID трека
 * `fileName` – имя файла
 * `filePath` - Локальный путь к файлу на пользовательском устройстве
@@ -31,7 +31,7 @@ Web API
 * `500, "Internal Server Error"` – если произошел сбой на сервере
 
 ### Получение трека с сервера
-##### GET /api/v2/tracks/{trackId}
+##### GET /v2/tracks/{trackId}
 * `{trackId}` – UUID трека 
 
 ##### HttpStatus
@@ -39,7 +39,7 @@ Web API
 * `404, "Not Found"` – если трек с таким recid не найден
 
 ### Получение следующего трека с сервера
-##### GET /api/v2/tracks/{deviceId}/next
+##### GET /v2/tracks/{deviceId}/next
 * `{deviceId}` – UUID девайса
 
 ##### HttpStatus
@@ -47,7 +47,7 @@ Web API
 * `404, "Not Found"` – если трек с таким recid не найден
 
 ### Сохранение истории треков
-##### POST /api/v2/histories/{deviceId}/{trackId}
+##### POST /v2/histories/{deviceId}/{trackId}
 * `{trackId}` – UUID прослушанного трека
 * `{deviceId}` – UUID устройства где был прослушан трек
 * `lastListen` - Время последнего прослушивания или пропуска трека для данного пользователя

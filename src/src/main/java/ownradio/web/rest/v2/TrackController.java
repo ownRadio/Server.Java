@@ -22,7 +22,7 @@ import java.util.UUID;
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/v2/tracks")
+@RequestMapping(value = "/v2/tracks")
 public class TrackController {
 
 	private final TrackService trackService;

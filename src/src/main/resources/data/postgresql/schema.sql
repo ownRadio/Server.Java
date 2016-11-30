@@ -123,88 +123,88 @@ END;
 '
 LANGUAGE plpgsql;
 
-
-CREATE OR REPLACE FUNCTION getnexttrackid_v2(i_deviceid uuid, OUT o_methodid integer, OUT o_trackid uuid)
- AS
-'
-DECLARE
-	i_userid uuid = i_deviceid;
-	rnd integer = (select trunc(random() * 10));
-BEGIN
-	-- Добавляем устройство, если его еще не существует
-	-- Если ID устройства еще нет в БД
-	IF NOT EXISTS(SELECT recid
-		FROM devices
-		WHERE recid = i_deviceid)
-	THEN
-
-		-- Добавляем нового пользователя
-		INSERT INTO users (recid, recname, reccreated) SELECT
-														i_userid,
-														''New user recname'',
-														now();
-
-		-- Добавляем новое устройство
-		INSERT INTO devices (recid, userid, recname, reccreated) SELECT
-																i_deviceid,
-																i_userid,
-																''New device recname'',
-																now();
-		ELSE
-			SELECT (SELECT userid
-				FROM devices
-				WHERE recid = i_deviceid
-				LIMIT 1)
-		INTO i_userid;
-	END IF;
-
-  -- Выбираем следующий трек
-
-  -- В 9/10 случаях выбираем трек из треков пользователя (добавленных им или прослушанных до конца)
-  -- с положительным рейтингом, за исключением прослушанных за последние сутки
-	IF (rnd > 1)
-	THEN
-		o_methodid = 2;
-		o_trackid=(SELECT trackid
-		FROM ratings
-		WHERE userid = i_userid
-			AND lastlisten < localtimestamp - interval ''1 day''
-			AND ratingsum >= 0
-		ORDER BY RANDOM()
-		LIMIT 1);
-
-		-- Если такой трек найден - выход из функции, возврат найденного значения
-		IF FOUND
-		THEN RETURN;
-		END IF;
-	END IF;
-
-	-- В 1/10 случае выбираем случайный трек из ни разу не прослушанных пользователем треков
-	o_methodid = 3;
-	o_trackid=(SELECT recid
-	FROM tracks
-	WHERE recid NOT IN
-		(SELECT trackid
-		FROM ratings
-		WHERE userid = i_userid)
-	ORDER BY RANDOM()
-	LIMIT 1);
-
-  -- Если такой трек найден - выход из функции, возврат найденного значения
-	IF FOUND
-	THEN RETURN;
-	END IF;
-
-	-- Если предыдущие запросы вернули null, выбираем случайный трек
-	o_methodid = 1;
-	o_trackid=(SELECT recid
-	FROM tracks
-	ORDER BY RANDOM()
-	LIMIT 1);
-	RETURN;
-END;
-'
-LANGUAGE plpgsql;
+--
+-- CREATE OR REPLACE FUNCTION getnexttrackid_v2(i_deviceid uuid, OUT o_methodid integer, OUT o_trackid uuid)
+--  AS
+-- '
+-- DECLARE
+-- 	i_userid uuid = i_deviceid;
+-- 	rnd integer = (select trunc(random() * 10));
+-- BEGIN
+-- 	-- Добавляем устройство, если его еще не существует
+-- 	-- Если ID устройства еще нет в БД
+-- 	IF NOT EXISTS(SELECT recid
+-- 		FROM devices
+-- 		WHERE recid = i_deviceid)
+-- 	THEN
+--
+-- 		-- Добавляем нового пользователя
+-- 		INSERT INTO users (recid, recname, reccreated) SELECT
+-- 														i_userid,
+-- 														''New user recname'',
+-- 														now();
+--
+-- 		-- Добавляем новое устройство
+-- 		INSERT INTO devices (recid, userid, recname, reccreated) SELECT
+-- 																i_deviceid,
+-- 																i_userid,
+-- 																''New device recname'',
+-- 																now();
+-- 		ELSE
+-- 			SELECT (SELECT userid
+-- 				FROM devices
+-- 				WHERE recid = i_deviceid
+-- 				LIMIT 1)
+-- 		INTO i_userid;
+-- 	END IF;
+--
+--   -- Выбираем следующий трек
+--
+--   -- В 9/10 случаях выбираем трек из треков пользователя (добавленных им или прослушанных до конца)
+--   -- с положительным рейтингом, за исключением прослушанных за последние сутки
+-- 	IF (rnd > 1)
+-- 	THEN
+-- 		o_methodid = 2;
+-- 		o_trackid=(SELECT trackid
+-- 		FROM ratings
+-- 		WHERE userid = i_userid
+-- 			AND lastlisten < localtimestamp - interval ''1 day''
+-- 			AND ratingsum >= 0
+-- 		ORDER BY RANDOM()
+-- 		LIMIT 1);
+--
+-- 		-- Если такой трек найден - выход из функции, возврат найденного значения
+-- 		IF FOUND
+-- 		THEN RETURN;
+-- 		END IF;
+-- 	END IF;
+--
+-- 	-- В 1/10 случае выбираем случайный трек из ни разу не прослушанных пользователем треков
+-- 	o_methodid = 3;
+-- 	o_trackid=(SELECT recid
+-- 	FROM tracks
+-- 	WHERE recid NOT IN
+-- 		(SELECT trackid
+-- 		FROM ratings
+-- 		WHERE userid = i_userid)
+-- 	ORDER BY RANDOM()
+-- 	LIMIT 1);
+--
+--   -- Если такой трек найден - выход из функции, возврат найденного значения
+-- 	IF FOUND
+-- 	THEN RETURN;
+-- 	END IF;
+--
+-- 	-- Если предыдущие запросы вернули null, выбираем случайный трек
+-- 	o_methodid = 1;
+-- 	o_trackid=(SELECT recid
+-- 	FROM tracks
+-- 	ORDER BY RANDOM()
+-- 	LIMIT 1);
+-- 	RETURN;
+-- END;
+-- '
+-- LANGUAGE plpgsql;
 
 -- CREATE TYPE myintuuid AS (
 --   methodid INTEGER,
@@ -217,17 +217,17 @@ LANGUAGE plpgsql;
 --   trackid CHARACTER VARYING
 -- );
 --
-CREATE OR REPLACE FUNCTION public.getnexttrack_string(i_deviceid uuid)
-  RETURNS CHARACTER VARYING AS
-'
-DECLARE
-  tmpres myintuuid;
-  res myintstring;
-BEGIN
-  tmpres = getnexttrackid_v2(i_deviceid);
-  res.methodid = tmpres.methodid;
-  res.trackid = CAST ((tmpres.trackid) AS CHARACTER VARYING);
-  RETURN res.trackid;
-END;
-'
-LANGUAGE plpgsql;
+-- CREATE OR REPLACE FUNCTION public.getnexttrack_string(i_deviceid uuid)
+--   RETURNS CHARACTER VARYING AS
+-- '
+-- DECLARE
+--   tmpres myintuuid;
+--   res myintstring;
+-- BEGIN
+--   tmpres = getnexttrackid_v2(i_deviceid);
+--   res.methodid = tmpres.methodid;
+--   res.trackid = CAST ((tmpres.trackid) AS CHARACTER VARYING);
+--   RETURN res.trackid;
+-- END;
+-- '
+-- LANGUAGE plpgsql;

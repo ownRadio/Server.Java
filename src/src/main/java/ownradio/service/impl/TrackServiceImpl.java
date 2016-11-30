@@ -63,4 +63,21 @@ public class TrackServiceImpl implements TrackService {
 
 		storeTrack.setPath(filePath);
 	}
+
+//	@Override
+//	@Transactional
+//	public void update(Track track) {
+//		boolean result = trackRepository.registerTrack(track.getRecid(), track.getLocaldevicepathupload(), track.getPath(), track.getDevice().getRecid());
+//		if (!result) {
+//			throw new RuntimeException();
+//		}
+//
+//		Track storeTrack = trackRepository.findOne(track.getRecid());
+//
+//		String dirName = storeTrack.getDevice().getUser().getRecid().toString();
+//		String fileName = storeTrack.getRecid() + "." + StringUtils.getFilenameExtension(file.getOriginalFilename());
+//		String filePath = ResourceUtil.save(dirName, fileName, file);
+//
+//		storeTrack.setPath(filePath);
+//	}
 }

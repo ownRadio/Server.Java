@@ -51,7 +51,6 @@ public class TrackController {
 
 			Track track = new Track();
 			track.setRecid(fileGuid);
-			track.setRecname(fileName);
 			track.setDevice(device);
 			track.setPath("---");
 			track.setLocaldevicepathupload(filePath);
@@ -98,7 +97,10 @@ public class TrackController {
 	public ResponseEntity<?> getNextTrack(@PathVariable UUID deviceId) {
 		NextTrack nextTrack = trackService.getNextTrackIdV2(deviceId);
 		Map<String, String> trackInfo = new HashMap<>();
-
+		String artist = null;
+		String title = null;
+		boolean artistFlag = false;
+		boolean titleFlag = false;
 		if (nextTrack.getTrackid() != null) {
 			try {
 				Track track = trackRepository.findOne(nextTrack.getTrackid());
@@ -112,21 +114,47 @@ public class TrackController {
 
 					if (mp3File.hasId3v2Tag()) {
 						ID3v2 id3v2Tag2 = mp3File.getId3v2Tag();
-						track.setRecname(id3v2Tag2.getTitle().replaceAll("\u0000", ""));
-						track.setArtist(id3v2Tag2.getArtist().replaceAll("\u0000", ""));
-						track.setIsfilledinfo(1);
+						title = id3v2Tag2.getTitle();
+						artist = id3v2Tag2.getArtist();
+
+//						track.setRecname(id3v2Tag2.getTitle().replaceAll("\u0000", ""));
+//						track.setArtist(id3v2Tag2.getArtist().replaceAll("\u0000", ""));
+//						track.setIsfilledinfo(1);
 					}else if (mp3File.hasId3v1Tag()){
 						ID3v1 id3v1Tag1 = mp3File.getId3v1Tag();
-						track.setRecname(id3v1Tag1.getTitle().replaceAll("\u0000", ""));
-						track.setArtist(id3v1Tag1.getArtist().replaceAll("\u0000", ""));
-						track.setIsfilledinfo(1);
+						title = id3v1Tag1.getTitle();
+						artist = id3v1Tag1.getArtist();
+
+//						track.setRecname(id3v1Tag1.getTitle().replaceAll("\u0000", ""));
+//						track.setArtist(id3v1Tag1.getArtist().replaceAll("\u0000", ""));
+//						track.setIsfilledinfo(1);
 					}
+
+					if(title != null && !title.equals("null") && !title.isEmpty()){
+						track.setRecname(title.replaceAll("\u0000", ""));
+						titleFlag = true;
+					}else
+						titleFlag = false;
+					if(artist != null && !artist.equals("null") && !artist.isEmpty()){
+						track.setArtist(artist.replaceAll("\u0000", ""));
+						artistFlag = true;
+					}else
+						artistFlag = false;
+
+					if(artistFlag && titleFlag)
+						track.setIsfilledinfo(1);
 					trackRepository.saveAndFlush(track);
 				}
 				trackInfo.put("id", nextTrack.getTrackid().toString());
 				trackInfo.put("length", String.valueOf(track.getLength()));
-				trackInfo.put("name", track.getRecname());
-				trackInfo.put("artist", track.getArtist());
+				if(track.getRecname() != null && !track.getRecname().isEmpty() && !track.getRecname().equals("null"))
+					trackInfo.put("name", track.getRecname());
+				else
+					trackInfo.put("name", "No name");
+				if(track.getArtist() != null && !track.getArtist().isEmpty() && !track.getArtist().equals("null"))
+					trackInfo.put("artist", track.getArtist());
+				else
+					trackInfo.put("artist", "NetVox Lab");
 				trackInfo.put("methodid", nextTrack.getMethodid().toString());
 
 				return new ResponseEntity<>(trackInfo, HttpStatus.OK);

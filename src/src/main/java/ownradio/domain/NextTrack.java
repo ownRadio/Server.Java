@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.util.UUID;
 
 /**
@@ -12,10 +13,7 @@ import java.util.UUID;
  */
 @Getter
 @Setter
-//@Entity
 public class NextTrack {
-	private Integer methodid;
-
-	@Type(type="pg-uuid")
 	private UUID trackid;
+	private Integer methodid;
 }

@@ -21,15 +21,15 @@ import java.util.UUID;
  * Created by a.polunina on 28.11.2016.
  */
 @Slf4j
-@RestController
+@RestController("HistoryControllerV3")
 @RequestMapping("/v3/histories")
-public class HistoryControllerV3 {
+public class HistoryController {
 	private final HistoryService historyService;
 	private final TrackService trackService;
 	private final DeviceService deviceService;
 
 	@Autowired
-	public HistoryControllerV3(HistoryService historyService, TrackService trackService, DeviceService deviceService) {
+	public HistoryController(HistoryService historyService, TrackService trackService, DeviceService deviceService) {
 		this.historyService = historyService;
 		this.trackService = trackService;
 		this.deviceService = deviceService;

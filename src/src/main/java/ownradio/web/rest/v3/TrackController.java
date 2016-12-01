@@ -1,7 +1,6 @@
 package ownradio.web.rest.v3;
 
 import com.mpatric.mp3agic.ID3v1;
-import com.mpatric.mp3agic.ID3v1Tag;
 import com.mpatric.mp3agic.ID3v2;
 import com.mpatric.mp3agic.Mp3File;
 import lombok.Data;
@@ -19,8 +18,6 @@ import ownradio.repository.TrackRepository;
 import ownradio.service.TrackService;
 import ownradio.util.ResourceUtil;
 
-import javax.sound.sampled.*;
-import java.io.*;
 import java.util.*;
 
 /**
@@ -113,12 +110,17 @@ public class TrackController {
 					track.setLength((int) mp3File.getLengthInSeconds());
 					track.setSize((int)mp3File.getLength() / 1024);//size in kilobytes
 
-					if (mp3File.hasId3v1Tag()) {
+					if (mp3File.hasId3v2Tag()) {
 						ID3v2 id3v2Tag2 = mp3File.getId3v2Tag();
-						track.setRecname(id3v2Tag2.getTitle());
-						track.setArtist(id3v2Tag2.getArtist());
+						track.setRecname(id3v2Tag2.getTitle().replaceAll("\u0000", ""));
+						track.setArtist(id3v2Tag2.getArtist().replaceAll("\u0000", ""));
+						track.setIsfilledinfo(1);
+					}else if (mp3File.hasId3v1Tag()){
+						ID3v1 id3v1Tag1 = mp3File.getId3v1Tag();
+						track.setRecname(id3v1Tag1.getTitle().replaceAll("\u0000", ""));
+						track.setArtist(id3v1Tag1.getArtist().replaceAll("\u0000", ""));
+						track.setIsfilledinfo(1);
 					}
-					track.setIsfilledinfo(1);
 					trackRepository.saveAndFlush(track);
 				}
 				trackInfo.put("id", nextTrack.getTrackid().toString());

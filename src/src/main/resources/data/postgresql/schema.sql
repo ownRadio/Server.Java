@@ -111,8 +111,8 @@ BEGIN
   VALUES (i_trackid, i_localdevicepathupload, i_path, i_deviceid, now());
 
   -- Добавляем запись о прослушивании трека в таблицу истории прослушивания
-  INSERT INTO histories (recid, deviceid, trackid, isListen, lastListen, method, reccreated)
-  VALUES (i_historyid, i_deviceid, i_trackid, 1, now(), ''method'', now());
+  INSERT INTO histories (recid, deviceid, trackid, isListen, lastListen, methodid, reccreated)
+  VALUES (i_historyid, i_deviceid, i_trackid, 1, now(), 2, now());
 
   -- Добавляем запись в таблицу рейтингов
   INSERT INTO ratings (recid, userid, trackid, lastListen, ratingsum, reccreated)

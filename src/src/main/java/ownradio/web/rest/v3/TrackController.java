@@ -1,8 +1,5 @@
 package ownradio.web.rest.v3;
 
-import com.mpatric.mp3agic.ID3v1;
-import com.mpatric.mp3agic.ID3v2;
-import com.mpatric.mp3agic.Mp3File;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +64,7 @@ public class TrackController {
 
 		try {
 			trackService.save(trackDTO.getTrack(), trackDTO.getMusicFile());
-
+			trackService.setTrackInfo(trackDTO.getTrack().getRecid());
 			return new ResponseEntity(HttpStatus.CREATED);
 		} catch (Exception e) {
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -104,62 +101,29 @@ public class TrackController {
 		if (nextTrack.getTrackid() != null) {
 			try {
 				Track track = trackRepository.findOne(nextTrack.getTrackid());
-
 				if(track.getIsfilledinfo() == null || track.getIsfilledinfo() != 1)
-				{
-					Mp3File mp3File = new Mp3File(track.getPath());
+					trackService.setTrackInfo(track.getRecid());
 
-					track.setLength((int) mp3File.getLengthInSeconds());
-					track.setSize((int)mp3File.getLength() / 1024);//size in kilobytes
+				if(track.getIscensorial() != null && track.getIscensorial() == 0)
+					return getNextTrack(deviceId);
+				if(track.getLength() <  120)
+					return getNextTrack(deviceId);
 
-					if (mp3File.hasId3v2Tag()) {
-						ID3v2 id3v2Tag2 = mp3File.getId3v2Tag();
-						title = id3v2Tag2.getTitle();
-						artist = id3v2Tag2.getArtist();
-
-//						track.setRecname(id3v2Tag2.getTitle().replaceAll("\u0000", ""));
-//						track.setArtist(id3v2Tag2.getArtist().replaceAll("\u0000", ""));
-//						track.setIsfilledinfo(1);
-					}else if (mp3File.hasId3v1Tag()){
-						ID3v1 id3v1Tag1 = mp3File.getId3v1Tag();
-						title = id3v1Tag1.getTitle();
-						artist = id3v1Tag1.getArtist();
-
-//						track.setRecname(id3v1Tag1.getTitle().replaceAll("\u0000", ""));
-//						track.setArtist(id3v1Tag1.getArtist().replaceAll("\u0000", ""));
-//						track.setIsfilledinfo(1);
-					}
-
-					if(title != null && !title.equals("null") && !title.isEmpty()){
-						track.setRecname(title.replaceAll("\u0000", ""));
-						titleFlag = true;
-					}else
-						titleFlag = false;
-					if(artist != null && !artist.equals("null") && !artist.isEmpty()){
-						track.setArtist(artist.replaceAll("\u0000", ""));
-						artistFlag = true;
-					}else
-						artistFlag = false;
-
-					if(artistFlag && titleFlag)
-						track.setIsfilledinfo(1);
-					trackRepository.saveAndFlush(track);
-				}
 				trackInfo.put("id", nextTrack.getTrackid().toString());
 				trackInfo.put("length", String.valueOf(track.getLength()));
 				if(track.getRecname() != null && !track.getRecname().isEmpty() && !track.getRecname().equals("null"))
 					trackInfo.put("name", track.getRecname());
 				else
-					trackInfo.put("name", "No name");
+					trackInfo.put("name", "Unknown track");
 				if(track.getArtist() != null && !track.getArtist().isEmpty() && !track.getArtist().equals("null"))
 					trackInfo.put("artist", track.getArtist());
 				else
-					trackInfo.put("artist", "NetVox Lab");
+					trackInfo.put("artist", "Unknown artist");
 				trackInfo.put("methodid", nextTrack.getMethodid().toString());
 
 				return new ResponseEntity<>(trackInfo, HttpStatus.OK);
 			}catch (Exception ex){
-				log.debug("{}", ex.getMessage());
+				log.info("{}", ex.getMessage());
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
 		} else {

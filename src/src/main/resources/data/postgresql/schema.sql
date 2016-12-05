@@ -68,9 +68,9 @@ DECLARE
   i_ratingid  UUID;
 BEGIN
   CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-  SELECT uuid_generate_v1()
+  SELECT uuid_generate_v4()
   INTO i_historyid;
-  SELECT uuid_generate_v1()
+  SELECT uuid_generate_v4()
   INTO i_ratingid;
 
   --
@@ -125,42 +125,14 @@ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION getnexttrackid_v2(i_deviceid uuid)
-  RETURNS TABLE(
-  track character varying
-  , methodid integer)
+  RETURNS TABLE(track uuid, methodid integer)
 AS
 '
 DECLARE
 	i_userid uuid = i_deviceid;
-	rnd integer = (select trunc(random() * 10));
-    o_methodid integer;
+	rnd integer = (select trunc(random() * 10)); -- получаем случайное число от 0 до 9
+    o_methodid integer; -- id метода выбора трека
 BEGIN
-	-- Добавляем устройство, если его еще не существует
-	-- Если ID устройства еще нет в БД
-	IF NOT EXISTS(SELECT recid
-		FROM devices
-		WHERE recid = i_deviceid)
-	THEN
-
-		-- Добавляем нового пользователя
-		INSERT INTO users (recid, recname, reccreated) SELECT
-							i_userid,
-							''New user recname'',
-							now();
-
-		-- Добавляем новое устройство
-		INSERT INTO devices (recid, userid, recname, reccreated) SELECT
-							i_deviceid,
-							i_userid,
-							''New device recname'',
-							now();
-		ELSE
-			SELECT (SELECT userid
-				FROM devices
-				WHERE recid = i_deviceid
-				LIMIT 1)
-		INTO i_userid;
-	END IF;
 
   -- Выбираем следующий трек
 
@@ -170,11 +142,79 @@ BEGIN
 	THEN
 		o_methodid = 2;
 		RETURN QUERY
-		SELECT CAST ((trackid) AS CHARACTER VARYING) AS track, o_methodid AS methodid
+		SELECT trackid, o_methodid
+          FROM ratings
+          WHERE userid = i_userid
+            AND lastlisten < localtimestamp - interval ''1 day''
+            AND ratingsum >= 0
+          ORDER BY RANDOM()
+          LIMIT 1;
+
+		-- Если такой трек найден - выход из функции, возврат найденного значения
+		IF FOUND
+	      THEN RETURN;
+		END IF;
+	END IF;
+
+	-- В 1/10 случае выбираем случайный трек из ни разу не прослушанных пользователем треков
+	o_methodid = 3;
+	RETURN QUERY
+	SELECT recid, o_methodid
+      FROM tracks
+      WHERE recid NOT IN
+		(SELECT trackid
 		FROM ratings
-		WHERE userid = i_userid
-			AND lastlisten < localtimestamp - interval ''1 day''
-			AND ratingsum >= 0
+		WHERE userid = i_userid)
+      ORDER BY RANDOM()
+      LIMIT 1;
+
+  -- Если такой трек найден - выход из функции, возврат найденного значения
+	IF FOUND
+	THEN RETURN;
+	END IF;
+
+	-- Если предыдущие запросы вернули null, выбираем случайный трек
+	o_methodid = 1;
+	RETURN QUERY
+	SELECT recid, o_methodid
+	  FROM tracks
+      ORDER BY RANDOM()
+      LIMIT 1;
+	RETURN;
+END;
+'
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION getnexttrackid_v3(IN i_deviceid uuid)
+  RETURNS TABLE(track uuid, methodid integer) AS
+'
+DECLARE
+	i_userid   uuid = i_deviceid;
+	rnd        integer = (select trunc(random() * 1001));
+	o_methodid integer; -- id метода выбора трека
+    owntracks integer; -- количество "своих" треков пользователя (обрезаем на 900 шт)
+BEGIN
+	-- Выбираем следующий трек
+
+	-- Определяем количество "своих" треков пользователя, ограничивая его 900
+	owntracks = (SELECT COUNT(*) FROM (
+		SELECT * FROM ratings
+			WHERE userid = i_userid
+					AND ratingsum >=0
+			LIMIT 900) AS count) ;
+
+	-- Если rnd меньше количества "своих" треков, выбираем трек из треков пользователя (добавленных им или прослушанных до конца)
+	-- с положительным рейтингом, за исключением прослушанных за последние сутки
+
+	IF (rnd < owntracks)
+	THEN
+		o_methodid = 2; -- метод выбора из своих треков
+		RETURN QUERY
+		SELECT trackid, o_methodid
+          FROM ratings
+          WHERE userid = i_userid
+                AND lastlisten < localtimestamp - interval ''1 day''
+                AND ratingsum >= 0
 		ORDER BY RANDOM()
 		LIMIT 1;
 
@@ -185,30 +225,75 @@ BEGIN
 	END IF;
 
 	-- В 1/10 случае выбираем случайный трек из ни разу не прослушанных пользователем треков
-	o_methodid = 3;
+	o_methodid = 3; -- метод выбора из непрослушанных треков
 	RETURN QUERY
-	SELECT CAST ((recid) AS CHARACTER VARYING) AS track, o_methodid AS methodid
-	FROM tracks
-	WHERE recid NOT IN
-		(SELECT trackid
-		FROM ratings
-		WHERE userid = i_userid)
-	ORDER BY RANDOM()
+	SELECT recid, o_methodid
+      FROM tracks
+      WHERE recid NOT IN
+            (SELECT trackid
+             FROM ratings
+             WHERE userid = i_userid)
+    ORDER BY RANDOM()
 	LIMIT 1;
 
-  -- Если такой трек найден - выход из функции, возврат найденного значения
+	-- Если такой трек найден - выход из функции, возврат найденного значения
 	IF FOUND
-	THEN RETURN;
+	  THEN RETURN;
 	END IF;
 
 	-- Если предыдущие запросы вернули null, выбираем случайный трек
-	o_methodid = 1;
+	o_methodid = 1; -- метод выбора случайного трека
 	RETURN QUERY
-	SELECT CAST ((recid) AS CHARACTER VARYING) AS track, o_methodid AS methodid
-	FROM tracks
-	ORDER BY RANDOM()
-	LIMIT 1;
-	RETURN;
+	SELECT recid, o_methodid
+      FROM tracks
+      ORDER BY RANDOM()
+    LIMIT 1;
+    RETURN;
+END;
+'
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION getnexttrack(i_deviceid UUID)
+  RETURNS TABLE(
+    track character varying
+  , methodid integer)
+  AS
+'
+DECLARE
+  i_userid   uuid = i_deviceid; -- в дальнейшем заменить получением userid по deviceid
+BEGIN
+	-- Добавляем устройство, если его еще не существует
+	-- Если ID устройства еще нет в БД
+	IF NOT EXISTS(SELECT recid
+				  FROM devices
+				  WHERE recid = i_deviceid)
+	THEN
+
+		-- Добавляем нового пользователя
+		INSERT INTO users (recid, recname, reccreated) SELECT
+				i_userid,
+				''New user recname'',
+				now();
+
+		-- Добавляем новое устройство
+		INSERT INTO devices (recid, userid, recname, reccreated) SELECT
+				i_deviceid,
+				i_userid,
+				''New device recname'',
+				now();
+	ELSE
+		SELECT (SELECT userid
+				FROM devices
+				WHERE recid = i_deviceid
+				LIMIT 1)
+		INTO i_userid;
+	END IF;
+
+	-- Возвращаем trackid, конвертируя его в character varying и methodid
+	RETURN QUERY SELECT
+					 CAST((nexttrack.track) AS CHARACTER VARYING),
+					 nexttrack.methodid
+				 FROM getnexttrackid_v3(i_deviceid) AS nexttrack;
 END;
 '
 LANGUAGE plpgsql;

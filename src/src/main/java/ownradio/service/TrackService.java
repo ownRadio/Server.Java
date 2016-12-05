@@ -22,4 +22,6 @@ public interface TrackService {
 	NextTrack getNextTrackIdV2(UUID deviceId);
 
 	void save(Track track, MultipartFile file);
+
+	void setTrackInfo(UUID trackid);
 }

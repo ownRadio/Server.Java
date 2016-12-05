@@ -1,5 +1,8 @@
 package ownradio.service.impl;
 
+import com.mpatric.mp3agic.ID3v1;
+import com.mpatric.mp3agic.ID3v2;
+import com.mpatric.mp3agic.Mp3File;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,5 +64,49 @@ public class TrackServiceImpl implements TrackService {
 		String filePath = ResourceUtil.save(dirName, fileName, file);
 
 		storeTrack.setPath(filePath);
+	}
+
+	@Override
+	@Transactional
+	public void setTrackInfo(UUID trackid) {
+		String artist = null;
+		String title = null;
+		boolean artistFlag = false;
+		boolean titleFlag = false;
+		if (trackid != null) {
+			try {
+				Track track = trackRepository.findOne(trackid);
+				Mp3File mp3File = new Mp3File(track.getPath());
+
+				track.setLength((int) mp3File.getLengthInSeconds());//duration track
+				track.setSize((int) mp3File.getLength() / 1024);//size in kilobytes
+
+				if (mp3File.hasId3v2Tag()) {
+					ID3v2 id3v2Tag2 = mp3File.getId3v2Tag();
+					title = id3v2Tag2.getTitle();
+					artist = id3v2Tag2.getArtist();
+				} else if (mp3File.hasId3v1Tag()) {
+					ID3v1 id3v1Tag1 = mp3File.getId3v1Tag();
+					title = id3v1Tag1.getTitle();
+					artist = id3v1Tag1.getArtist();
+				}
+
+				if (title != null && !title.equals("null") && !title.isEmpty()) {
+					track.setRecname(title.replaceAll("\u0000", ""));
+					titleFlag = true;
+				} else
+					titleFlag = false;
+				if (artist != null && !artist.equals("null") && !artist.isEmpty()) {
+					track.setArtist(artist.replaceAll("\u0000", ""));
+					artistFlag = true;
+				} else
+					artistFlag = false;
+
+				if (artistFlag && titleFlag)
+					track.setIsfilledinfo(1);
+				trackRepository.saveAndFlush(track);
+			} catch (Exception ex) {
+			}
+		}
 	}
 }

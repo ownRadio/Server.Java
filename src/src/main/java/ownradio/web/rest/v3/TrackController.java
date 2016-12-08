@@ -15,6 +15,7 @@ import ownradio.repository.TrackRepository;
 import ownradio.service.TrackService;
 import ownradio.util.ResourceUtil;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -94,13 +95,17 @@ public class TrackController {
 	public ResponseEntity<?> getNextTrack(@PathVariable UUID deviceId) {
 		NextTrack nextTrack = trackService.getNextTrackIdV2(deviceId);
 		Map<String, String> trackInfo = new HashMap<>();
-		String artist = null;
-		String title = null;
-		boolean artistFlag = false;
-		boolean titleFlag = false;
-		if (nextTrack.getTrackid() != null) {
+		if (nextTrack != null) {
 			try {
 				Track track = trackRepository.findOne(nextTrack.getTrackid());
+
+				File file = new File(track.getPath());
+				if(!file.exists()){
+					track.setIsexist(0);
+					trackRepository.saveAndFlush(track);
+					return getNextTrack(deviceId);
+				}
+
 				if(track.getIsfilledinfo() == null || track.getIsfilledinfo() != 1)
 					trackService.setTrackInfo(track.getRecid());
 

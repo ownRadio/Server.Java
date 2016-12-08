@@ -44,9 +44,17 @@ public class TrackServiceImpl implements TrackService {
 	public NextTrack getNextTrackIdV2(UUID deviceId) {
 		NextTrack nextTrack = new NextTrack();
 		List<Object[]> objects = trackRepository.getNextTrackV2(deviceId);
-		nextTrack.setTrackid(UUID.fromString((String) objects.get(0)[0]));
-		nextTrack.setMethodid((Integer) objects.get(0)[1]);
-		return nextTrack;
+		try{
+			if(objects != null) {
+				nextTrack.setTrackid(UUID.fromString((String) objects.get(0)[0]));
+				nextTrack.setMethodid((Integer) objects.get(0)[1]);
+				return nextTrack;
+			}else{
+				return null;
+			}
+		}catch (Exception ex){
+			return null;
+		}
 	}
 
 	@Override
@@ -73,22 +81,28 @@ public class TrackServiceImpl implements TrackService {
 		String title = null;
 		boolean artistFlag = false;
 		boolean titleFlag = false;
+
+		byte[] buf;
+
 		if (trackid != null) {
 			try {
 				Track track = trackRepository.findOne(trackid);
 				Mp3File mp3File = new Mp3File(track.getPath());
-
 				track.setLength((int) mp3File.getLengthInSeconds());//duration track
 				track.setSize((int) mp3File.getLength() / 1024);//size in kilobytes
 
-				if (mp3File.hasId3v2Tag()) {
+				if (mp3File.hasId3v1Tag()) {
+					ID3v1 id3v1Tag1 = mp3File.getId3v1Tag();
+					title = new String(id3v1Tag1.getTitle().getBytes("UTF16"),"Cp1251").replaceAll("\u0000", "").substring(2);
+//					title = id3v1Tag1.getTitle();
+					artist = new String(id3v1Tag1.getArtist().getBytes("UTF16"),"Cp1251").replaceAll("\u0000", "").substring(2);
+//					artist = id3v1Tag1.getArtist();
+				}else if (mp3File.hasId3v2Tag()) {
 					ID3v2 id3v2Tag2 = mp3File.getId3v2Tag();
 					title = id3v2Tag2.getTitle();
+					title = title.equals(id3v2Tag2.getTitle()) ? title : null;
 					artist = id3v2Tag2.getArtist();
-				} else if (mp3File.hasId3v1Tag()) {
-					ID3v1 id3v1Tag1 = mp3File.getId3v1Tag();
-					title = id3v1Tag1.getTitle();
-					artist = id3v1Tag1.getArtist();
+					artist = artist.equals(id3v2Tag2.getArtist()) ? artist : null;
 				}
 
 				if (title != null && !title.equals("null") && !title.isEmpty()) {

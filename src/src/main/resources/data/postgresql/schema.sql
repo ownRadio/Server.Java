@@ -107,8 +107,8 @@ BEGIN
   END IF;
 
   -- Добавляем трек в базу данных
-  INSERT INTO tracks (recid, localdevicepathupload, path, deviceid, reccreated)
-  VALUES (i_trackid, i_localdevicepathupload, i_path, i_deviceid, now());
+  INSERT INTO tracks (recid, localdevicepathupload, path, deviceid, reccreated, isexist)
+  VALUES (i_trackid, i_localdevicepathupload, i_path, i_deviceid, now(), 1);
 
   -- Добавляем запись о прослушивании трека в таблицу истории прослушивания
   INSERT INTO histories (recid, deviceid, trackid, isListen, lastListen, methodid, reccreated)
@@ -147,6 +147,7 @@ BEGIN
           WHERE userid = i_userid
             AND lastlisten < localtimestamp - interval ''1 day''
             AND ratingsum >= 0
+            AND (SELECT isexist FROM tracks WHERE recid = trackid) = 1
           ORDER BY RANDOM()
           LIMIT 1;
 
@@ -165,6 +166,7 @@ BEGIN
 		(SELECT trackid
 		FROM ratings
 		WHERE userid = i_userid)
+          AND isexist = 1
       ORDER BY RANDOM()
       LIMIT 1;
 
@@ -178,6 +180,7 @@ BEGIN
 	RETURN QUERY
 	SELECT recid, o_methodid
 	  FROM tracks
+      WHERE isexist = 1
       ORDER BY RANDOM()
       LIMIT 1;
 	RETURN;
@@ -215,6 +218,7 @@ BEGIN
           WHERE userid = i_userid
                 AND lastlisten < localtimestamp - interval ''1 day''
                 AND ratingsum >= 0
+				AND (SELECT isexist FROM tracks WHERE recid = trackid) = 1
 		ORDER BY RANDOM()
 		LIMIT 1;
 
@@ -233,6 +237,7 @@ BEGIN
             (SELECT trackid
              FROM ratings
              WHERE userid = i_userid)
+			AND isexist = 1
     ORDER BY RANDOM()
 	LIMIT 1;
 
@@ -246,6 +251,7 @@ BEGIN
 	RETURN QUERY
 	SELECT recid, o_methodid
       FROM tracks
+      WHERE isexist = 1
       ORDER BY RANDOM()
     LIMIT 1;
     RETURN;

@@ -41,4 +41,6 @@ public class Track extends AbstractEntity {
 
 	private Integer iscensorial;
 
+	private Integer isexist;
+
 }

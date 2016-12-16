@@ -6,7 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import ownradio.domain.Device;
 import ownradio.domain.Track;
@@ -22,7 +25,7 @@ import java.util.UUID;
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/v2/tracks")
+@RequestMapping(value = "/api/v2/tracks")
 public class TrackController {
 
 	private final TrackService trackService;

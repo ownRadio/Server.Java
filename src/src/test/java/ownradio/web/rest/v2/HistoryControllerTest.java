@@ -1,14 +1,12 @@
 package ownradio.web.rest.v2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import ownradio.domain.Device;
@@ -70,17 +68,10 @@ public class HistoryControllerTest {
 		given(this.trackService.getById(TRACK_UUID)).willReturn(track);
 		given(this.deviceService.getById(DEVICE_UUID)).willReturn(device);
 
-		JSONObject obj = new JSONObject();
-		obj.put("lastListen", "2016-11-28T12:34:56");
-		obj.put("isListen", "1");
-		obj.put("method", "method");
-
-		mockMvc.perform(post("/v2/histories/{deviceId}/{trackId}", DEVICE_UUID, TRACK_UUID)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(obj.toString())
-//				.param("lastListen", "2016-11-28 12:34:56")
-//				.param("isListen", "1")
-//				.param("method", "method")
+		mockMvc.perform(post("/api/v2/histories/{deviceId}/{trackId}", DEVICE_UUID, TRACK_UUID)
+				.param("lastListen", "12/12/2016 11:11:11")
+				.param("isListen", "1")
+				.param("method", "method")
 		)
 				.andDo(print())
 				.andExpect(
@@ -96,17 +87,10 @@ public class HistoryControllerTest {
 
 		doThrow(RuntimeException.class).when(this.historyService).save(any(History.class));
 
-		JSONObject obj = new JSONObject();
-		obj.put("lastListen", "2016-11-28T12:34:56");
-		obj.put("isListen", "1");
-		obj.put("method", "method");
-
-		mockMvc.perform(post("/v2/histories/{deviceId}/{trackId}", DEVICE_UUID, TRACK_UUID)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(obj.toString())
-//				.param("lastListen", "2016-11-28 12:34:56")
-//				.param("isListen", "1")
-//				.param("method", "method")
+		mockMvc.perform(post("/api/v2/histories/{deviceId}/{trackId}", DEVICE_UUID, TRACK_UUID)
+				.param("lastListen", "12/12/2016 11:11:11")
+				.param("isListen", "1")
+				.param("method", "method")
 		)
 				.andDo(print())
 				.andExpect(

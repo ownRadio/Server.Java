@@ -29,18 +29,4 @@ public class Track extends AbstractEntity {
 	@Column(nullable = false)
 	private String localdevicepathupload;
 
-	private Integer length;
-
-	private String artist;
-
-	private Integer size;
-
-	private Integer iscorrect;
-
-	private Integer isfilledinfo;
-
-	private Integer iscensorial;
-
-	private Integer isexist;
-
 }

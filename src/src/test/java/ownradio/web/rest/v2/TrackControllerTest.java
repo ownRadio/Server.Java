@@ -2,7 +2,6 @@ package ownradio.web.rest.v2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,7 +66,7 @@ public class TrackControllerTest {
 		device.setRecid(DEVICE_UUID);
 		device.setUser(user);
 
-		track = new Track(PATH, device, "---", 0,  "", 0, null, null, null, 1);
+		track = new Track(PATH, device, "---");
 
 		String requestParam = "musicFile";
 		String originalFilename = "test.mp3";
@@ -88,21 +87,13 @@ public class TrackControllerTest {
 	public void saveStatusIsOk() throws Exception {
 		given(this.deviceService.getById(DEVICE_UUID)).willReturn(device);
 
-		JSONObject obj = new JSONObject();
-		obj.put("fileGuid", TRACK_UUID.toString());
-		obj.put("fileName", correctFile.getOriginalFilename());
-		obj.put("filePath", PATH);
-		obj.put("deviceId", DEVICE_UUID.toString());
-
-		mockMvc.perform(fileUpload("/v2/tracks")
+		mockMvc.perform(fileUpload("/api/v2/tracks")
 				.file(correctFile)
 				.accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
-				.content(obj.toString())
-				.contentType(MediaType.MULTIPART_FORM_DATA)
-//				.param("fileGuid", TRACK_UUID.toString())
-//				.param("fileName", correctFile.getOriginalFilename())
-//				.param("filePath", PATH)
-//				.param("deviceId", DEVICE_UUID.toString())
+				.param("fileGuid", TRACK_UUID.toString())
+				.param("fileName", correctFile.getOriginalFilename())
+				.param("filePath", PATH)
+				.param("deviceId", DEVICE_UUID.toString())
 		)
 				.andDo(print())
 				.andExpect(
@@ -112,7 +103,7 @@ public class TrackControllerTest {
 
 	@Test
 	public void saveStatusIsBadRequest() throws Exception {
-		mockMvc.perform(fileUpload("/v2/tracks")
+		mockMvc.perform(fileUpload("/api/v2/tracks")
 				.file(emptyFile)
 				.accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
 				.param("fileGuid", TRACK_UUID.toString())
@@ -130,7 +121,7 @@ public class TrackControllerTest {
 	public void getTrackStatusIsOk() throws Exception {
 		given(this.trackService.getById(TRACK_UUID)).willReturn(track);
 
-		mockMvc.perform(get("/v2/tracks/{trackId}", TRACK_UUID).accept(MediaType.TEXT_PLAIN))
+		mockMvc.perform(get("/api/v2/tracks/{trackId}", TRACK_UUID).accept(MediaType.TEXT_PLAIN))
 				.andDo(print())
 				.andExpect(
 						status().isOk()
@@ -148,7 +139,7 @@ public class TrackControllerTest {
 
 		given(this.trackService.getById(TRACK_UUID)).willReturn(null);
 
-		mockMvc.perform(get("/v2/tracks/{trackId}", TRACK_UUID).accept(MediaType.TEXT_PLAIN))
+		mockMvc.perform(get("/api/v2/tracks/{trackId}", TRACK_UUID).accept(MediaType.TEXT_PLAIN))
 				.andDo(print())
 				.andExpect(
 						status().isNotFound()
@@ -159,7 +150,7 @@ public class TrackControllerTest {
 	public void getNextTrackIdIsOk() throws Exception {
 		given(this.trackService.getNextTrackId(DEVICE_UUID)).willReturn(TRACK_UUID);
 
-		mockMvc.perform(get("/v2/tracks/{deviceId}/next", DEVICE_UUID))
+		mockMvc.perform(get("/api/v2/tracks/{deviceId}/next", DEVICE_UUID))
 				.andDo(print())
 				.andExpect(
 						status().isOk()
@@ -174,7 +165,7 @@ public class TrackControllerTest {
 	public void getNextTrackIdIsNotFound() throws Exception {
 		given(this.trackService.getNextTrackId(DEVICE_UUID)).willReturn(null);
 
-		mockMvc.perform(get("/v2/tracks/{deviceId}/next", DEVICE_UUID))
+		mockMvc.perform(get("/api/v2/tracks/{deviceId}/next", DEVICE_UUID))
 				.andDo(print())
 				.andExpect(
 						status().isNotFound()

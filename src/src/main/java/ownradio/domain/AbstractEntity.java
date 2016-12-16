@@ -7,7 +7,6 @@ import ownradio.annotation.DisplayName;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -31,20 +30,17 @@ public abstract class AbstractEntity implements Serializable {
 
 	private String recname;
 
-	@Temporal(TemporalType.TIMESTAMP)
-	private Calendar reccreated;
-
-	@Temporal(TemporalType.TIMESTAMP)
-	private Calendar recupdated;
+	private Date reccreated;
+	private Date recupdated;
 
 	@PrePersist
 	public void beforePersist() {
-		setReccreated(Calendar.getInstance());
+		setReccreated(new Date());
 	}
 
 	@PreUpdate
 	public void beforeUpdate() {
-		setRecupdated(Calendar.getInstance());
+		setRecupdated(new Date());
 	}
 
 	@Override

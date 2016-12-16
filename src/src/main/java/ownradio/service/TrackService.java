@@ -1,11 +1,8 @@
 package ownradio.service;
 
 import org.springframework.web.multipart.MultipartFile;
-import ownradio.domain.NextTrack;
 import ownradio.domain.Track;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -19,9 +16,5 @@ public interface TrackService {
 
 	UUID getNextTrackId(UUID deviceId);
 
-	NextTrack getNextTrackIdV2(UUID deviceId);
-
 	void save(Track track, MultipartFile file);
-
-	void setTrackInfo(UUID trackid);
 }

@@ -8,8 +8,6 @@ import org.springframework.stereotype.Component;
 import ownradio.domain.User;
 import ownradio.service.UserService;
 
-import java.util.TimeZone;
-
 /**
  * Класс инициализирует БД первоначальными данными
  *
@@ -24,7 +22,6 @@ public class InitDb implements CommandLineRunner {
 
 	@Override
 	public void run(String... strings) throws Exception {
-		TimeZone.setDefault(TimeZone.getTimeZone("Etc/UTC"));
 		User user = userService.save(new User());
 		log.debug("User recid: {}", user.getRecid());
 	}

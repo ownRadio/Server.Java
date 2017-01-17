@@ -14,6 +14,8 @@ import ownradio.service.DeviceService;
 import ownradio.service.HistoryService;
 import ownradio.service.TrackService;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -35,8 +37,46 @@ public class HistoryController {
 		this.deviceService = deviceService;
 	}
 
+	@Data
+	private static class HistoryDTO {
+		private UUID deviceId;
+		private UUID trackId;
+		private String lastListen;
+		private int isListen; // 1, -1
+		private Integer methodid;
+
+		public History getHistory() {
+			Calendar calendar;
+			try {
+				calendar = Calendar.getInstance();
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'H:m:s");
+				calendar.setTime( sdf.parse(lastListen));
+			}catch (Exception ex){
+				calendar = null;
+			}
+
+			History history = new History();
+			history.setLastListen(calendar);
+			history.setIsListen(isListen);
+			history.setMethodid(methodid);
+
+			return history;
+		}
+	}
+
+	//formData
 	@RequestMapping(value = "/{deviceId}/{trackId}", method = RequestMethod.POST)
-	public ResponseEntity save(@PathVariable UUID deviceId, @PathVariable UUID trackId, @RequestBody History history) {
+	public ResponseEntity save(@PathVariable UUID deviceId, @PathVariable UUID trackId, HistoryDTO historyDTO) {
+		return getResponseEntity(deviceId, trackId, historyDTO.getHistory());
+	}
+
+	//json
+	@RequestMapping(value = "/{deviceId}/{trackId}", method = RequestMethod.POST, headers = "Content-Type=application/json")
+	public ResponseEntity save2(@PathVariable UUID deviceId, @PathVariable UUID trackId, @RequestBody History history) {
+		return getResponseEntity(deviceId, trackId, history);
+	}
+
+	private ResponseEntity getResponseEntity(@PathVariable UUID deviceId, @PathVariable UUID trackId, @RequestBody History history) {
 		try {
 			log.info("{} {}",deviceId.toString(),trackId.toString());
 			log.info("{} {} {}",history.getLastListen(), history.getIsListen(), history.getMethod());

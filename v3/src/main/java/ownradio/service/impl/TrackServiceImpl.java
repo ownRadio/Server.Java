@@ -3,6 +3,9 @@ package ownradio.service.impl;
 import com.mpatric.mp3agic.ID3v1;
 import com.mpatric.mp3agic.ID3v2;
 import com.mpatric.mp3agic.Mp3File;
+import com.sun.xml.internal.fastinfoset.Decoder;
+import com.sun.xml.internal.fastinfoset.util.CharArray;
+import org.omg.IOP.Encoding;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,9 +15,9 @@ import ownradio.domain.NextTrack;
 import ownradio.domain.Track;
 import ownradio.repository.TrackRepository;
 import ownradio.service.TrackService;
+import ownradio.util.DecodeUtil;
 import ownradio.util.ResourceUtil;
 
-import java.io.File;
 import java.util.List;
 import java.util.UUID;
 
@@ -83,8 +86,6 @@ public class TrackServiceImpl implements TrackService {
 		boolean artistFlag = false;
 		boolean titleFlag = false;
 
-		byte[] buf;
-
 		if (trackid != null) {
 			try {
 				Track track = trackRepository.findOne(trackid);
@@ -92,18 +93,14 @@ public class TrackServiceImpl implements TrackService {
 				track.setLength((int) mp3File.getLengthInSeconds());//duration track
 				track.setSize((int) mp3File.getLength() / 1024);//size in kilobytes
 
-				if (mp3File.hasId3v1Tag()) {
-					ID3v1 id3v1Tag1 = mp3File.getId3v1Tag();
-					title = new String(id3v1Tag1.getTitle().getBytes("UTF16"),"Cp1251").replaceAll("\u0000", "").substring(2);
-//					title = id3v1Tag1.getTitle();
-					artist = new String(id3v1Tag1.getArtist().getBytes("UTF16"),"Cp1251").replaceAll("\u0000", "").substring(2);
-//					artist = id3v1Tag1.getArtist();
-				}else if (mp3File.hasId3v2Tag()) {
+				if (mp3File.hasId3v2Tag()) {
 					ID3v2 id3v2Tag2 = mp3File.getId3v2Tag();
-					title = id3v2Tag2.getTitle();
-					title = title.equals(id3v2Tag2.getTitle()) ? title : null;
-					artist = id3v2Tag2.getArtist();
-					artist = artist.equals(id3v2Tag2.getArtist()) ? artist : null;
+					title = DecodeUtil.Decode(id3v2Tag2.getTitle()) != null ? DecodeUtil.Decode(id3v2Tag2.getTitle()) : id3v2Tag2.getTitle();
+					artist = DecodeUtil.Decode(id3v2Tag2.getArtist()) != null ? DecodeUtil.Decode(id3v2Tag2.getArtist()) : id3v2Tag2.getArtist();
+				}else if (mp3File.hasId3v1Tag()) {
+					ID3v1 id3v1Tag1 = mp3File.getId3v1Tag();
+					title = DecodeUtil.Decode(id3v1Tag1.getTitle()) != null ? DecodeUtil.Decode(id3v1Tag1.getTitle()) : id3v1Tag1.getTitle();
+					artist = DecodeUtil.Decode(id3v1Tag1.getArtist()) != null ? DecodeUtil.Decode(id3v1Tag1.getArtist()) : id3v1Tag1.getArtist();
 				}
 
 				if (title != null && !title.equals("null") && !title.isEmpty()) {

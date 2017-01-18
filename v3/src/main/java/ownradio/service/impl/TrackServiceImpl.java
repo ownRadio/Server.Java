@@ -3,9 +3,6 @@ package ownradio.service.impl;
 import com.mpatric.mp3agic.ID3v1;
 import com.mpatric.mp3agic.ID3v2;
 import com.mpatric.mp3agic.Mp3File;
-import com.sun.xml.internal.fastinfoset.Decoder;
-import com.sun.xml.internal.fastinfoset.util.CharArray;
-import org.omg.IOP.Encoding;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -119,7 +116,7 @@ public class TrackServiceImpl implements TrackService {
 					track.setIsfilledinfo(1);
 				trackRepository.saveAndFlush(track);
 			} catch (Exception ex) {
-				ex.printStackTrace();
+//				ex.printStackTrace();
 			}
 		}
 	}

@@ -1,7 +1,5 @@
 package ownradio.util;
 
-import com.mpatric.mp3agic.ID3v2;
-
 import java.io.UnsupportedEncodingException;
 
 /**

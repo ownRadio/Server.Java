@@ -95,29 +95,31 @@ public class TrackServiceImpl implements TrackService {
 
 				if (mp3File.hasId3v2Tag()) {
 					ID3v2 id3v2Tag2 = mp3File.getId3v2Tag();
-					title = DecodeUtil.Decode(id3v2Tag2.getTitle()) != null ? DecodeUtil.Decode(id3v2Tag2.getTitle()) : id3v2Tag2.getTitle();
-					artist = DecodeUtil.Decode(id3v2Tag2.getArtist()) != null ? DecodeUtil.Decode(id3v2Tag2.getArtist()) : id3v2Tag2.getArtist();
-				}else if (mp3File.hasId3v1Tag()) {
+					title = DecodeUtil.Decode(id3v2Tag2.getTitle());
+					artist = DecodeUtil.Decode(id3v2Tag2.getArtist());
+				}
+				if(mp3File.hasId3v1Tag()) {
 					ID3v1 id3v1Tag1 = mp3File.getId3v1Tag();
-					title = DecodeUtil.Decode(id3v1Tag1.getTitle()) != null ? DecodeUtil.Decode(id3v1Tag1.getTitle()) : id3v1Tag1.getTitle();
-					artist = DecodeUtil.Decode(id3v1Tag1.getArtist()) != null ? DecodeUtil.Decode(id3v1Tag1.getArtist()) : id3v1Tag1.getArtist();
+					if(title == null || title.equals("null") || title.isEmpty())
+					title = DecodeUtil.Decode(id3v1Tag1.getTitle());
+					if(artist == null || artist.equals("null") || artist.isEmpty())
+					artist = DecodeUtil.Decode(id3v1Tag1.getArtist());
 				}
 
 				if (title != null && !title.equals("null") && !title.isEmpty()) {
 					track.setRecname(title.replaceAll("\u0000", ""));
 					titleFlag = true;
-				} else
-					titleFlag = false;
+				}
 				if (artist != null && !artist.equals("null") && !artist.isEmpty()) {
 					track.setArtist(artist.replaceAll("\u0000", ""));
 					artistFlag = true;
-				} else
-					artistFlag = false;
+				}
 
 				if (artistFlag && titleFlag)
 					track.setIsfilledinfo(1);
 				trackRepository.saveAndFlush(track);
 			} catch (Exception ex) {
+				ex.printStackTrace();
 			}
 		}
 	}

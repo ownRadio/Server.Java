@@ -2,25 +2,26 @@ package ownradio.util;
 
 import com.mpatric.mp3agic.ID3v2;
 
+import java.io.UnsupportedEncodingException;
+
 /**
  * Created by a.polunina on 11.01.2017.
  * Класс утилита для декодирования строк
  */
 public class DecodeUtil {
 
-	//Функция декодирует "Cp1251" в "UTF16"
+	//Функция декодирует "Cp1252" в "Cp1251"
 	public static String Decode(String str) {
+		if(str == null)
+			return str;
 		try {
-
-			char[] charArray = str.toCharArray();
-			for (char characher : charArray) {
-				if (characher >= 'А' - 848 && characher <= 'ё' - 848) {
-					return new String(str.getBytes("UTF16"), "Cp1251").replaceAll("\u0000", "").substring(2);
-				}
+			if (str.chars().anyMatch(c -> c >= 'А' - 848 && c <= 'ё' - 848)) {
+				return new String(str.getBytes("Cp1252"), "Cp1251");
 			}
-			return null;
-		} catch (Exception ex) {
-			return null;
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
 		}
+
+		return str;
 	}
 }

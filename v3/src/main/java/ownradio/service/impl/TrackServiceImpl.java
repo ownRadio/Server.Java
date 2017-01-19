@@ -12,9 +12,9 @@ import ownradio.domain.NextTrack;
 import ownradio.domain.Track;
 import ownradio.repository.TrackRepository;
 import ownradio.service.TrackService;
+import ownradio.util.DecodeUtil;
 import ownradio.util.ResourceUtil;
 
-import java.io.File;
 import java.util.List;
 import java.util.UUID;
 
@@ -83,8 +83,6 @@ public class TrackServiceImpl implements TrackService {
 		boolean artistFlag = false;
 		boolean titleFlag = false;
 
-		byte[] buf;
-
 		if (trackid != null) {
 			try {
 				Track track = trackRepository.findOne(trackid);
@@ -92,35 +90,33 @@ public class TrackServiceImpl implements TrackService {
 				track.setLength((int) mp3File.getLengthInSeconds());//duration track
 				track.setSize((int) mp3File.getLength() / 1024);//size in kilobytes
 
-				if (mp3File.hasId3v1Tag()) {
-					ID3v1 id3v1Tag1 = mp3File.getId3v1Tag();
-					title = new String(id3v1Tag1.getTitle().getBytes("UTF16"),"Cp1251").replaceAll("\u0000", "").substring(2);
-//					title = id3v1Tag1.getTitle();
-					artist = new String(id3v1Tag1.getArtist().getBytes("UTF16"),"Cp1251").replaceAll("\u0000", "").substring(2);
-//					artist = id3v1Tag1.getArtist();
-				}else if (mp3File.hasId3v2Tag()) {
+				if (mp3File.hasId3v2Tag()) {
 					ID3v2 id3v2Tag2 = mp3File.getId3v2Tag();
-					title = id3v2Tag2.getTitle();
-					title = title.equals(id3v2Tag2.getTitle()) ? title : null;
-					artist = id3v2Tag2.getArtist();
-					artist = artist.equals(id3v2Tag2.getArtist()) ? artist : null;
+					title = DecodeUtil.Decode(id3v2Tag2.getTitle());
+					artist = DecodeUtil.Decode(id3v2Tag2.getArtist());
+				}
+				if(mp3File.hasId3v1Tag()) {
+					ID3v1 id3v1Tag1 = mp3File.getId3v1Tag();
+					if(title == null || title.equals("null") || title.isEmpty())
+					title = DecodeUtil.Decode(id3v1Tag1.getTitle());
+					if(artist == null || artist.equals("null") || artist.isEmpty())
+					artist = DecodeUtil.Decode(id3v1Tag1.getArtist());
 				}
 
 				if (title != null && !title.equals("null") && !title.isEmpty()) {
 					track.setRecname(title.replaceAll("\u0000", ""));
 					titleFlag = true;
-				} else
-					titleFlag = false;
+				}
 				if (artist != null && !artist.equals("null") && !artist.isEmpty()) {
 					track.setArtist(artist.replaceAll("\u0000", ""));
 					artistFlag = true;
-				} else
-					artistFlag = false;
+				}
 
 				if (artistFlag && titleFlag)
 					track.setIsfilledinfo(1);
 				trackRepository.saveAndFlush(track);
 			} catch (Exception ex) {
+//				ex.printStackTrace();
 			}
 		}
 	}

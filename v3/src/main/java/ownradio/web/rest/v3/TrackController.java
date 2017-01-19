@@ -9,8 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ownradio.domain.Device;
+import ownradio.domain.DownloadTrack;
 import ownradio.domain.NextTrack;
 import ownradio.domain.Track;
+import ownradio.repository.DownloadTrackRepository;
 import ownradio.repository.TrackRepository;
 import ownradio.service.TrackService;
 import ownradio.util.ResourceUtil;
@@ -28,11 +30,13 @@ public class TrackController {
 
 	private final TrackService trackService;
 	private final TrackRepository trackRepository;
+	private final DownloadTrackRepository downloadTrackRepository;
 
 	@Autowired
-	public TrackController(TrackService trackService, TrackRepository trackRepository) {
+	public TrackController(TrackService trackService, TrackRepository trackRepository, DownloadTrackRepository downloadTrackRepository) {
 		this.trackService = trackService;
 		this.trackRepository = trackRepository;
+		this.downloadTrackRepository = downloadTrackRepository;
 	}
 
 	@Data
@@ -125,6 +129,15 @@ public class TrackController {
 				else
 					trackInfo.put("artist", "Unknown artist");
 				trackInfo.put("methodid", nextTrack.getMethodid().toString());
+
+
+				//Сохраняем информацию об отданном треке
+				Device device = new Device();
+				device.setRecid(deviceId);
+				DownloadTrack downloadTrack = new DownloadTrack();
+				downloadTrack.setTrack(track);
+				downloadTrack.setDevice(device);
+				downloadTrackRepository.saveAndFlush(downloadTrack);
 
 				return new ResponseEntity<>(trackInfo, HttpStatus.OK);
 			}catch (Exception ex){

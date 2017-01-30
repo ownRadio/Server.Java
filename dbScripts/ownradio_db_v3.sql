@@ -236,6 +236,23 @@ WITH (
 ALTER TABLE public.users
   OWNER TO postgres;
   
+-- Table: public.ratios
+
+-- DROP TABLE public.ratios;
+
+CREATE TABLE public.ratios
+(
+  recid uuid NOT NULL DEFAULT uuid_generate_v4(),
+  userid1 uuid NOT NULL,
+  userid2 uuid NOT NULL,
+  ratio integer,
+  CONSTRAINT ratios_pkey PRIMARY KEY (recid)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE public.ratios
+  OWNER TO postgres;
   
 -- Function: public.getnexttrack(uuid)
 
@@ -505,7 +522,312 @@ $BODY$
   ROWS 1000;
 ALTER FUNCTION public.getnexttrackid_v3(uuid)
   OWNER TO postgres;
+
+
+-- Function: public.getnexttrackid_v5(uuid)
+
+-- DROP FUNCTION public.getnexttrackid_v5(uuid);
+
+CREATE OR REPLACE FUNCTION public.getnexttrackid_v5(IN i_deviceid uuid)
+  RETURNS TABLE(track uuid, methodid integer) AS
+$BODY$
+DECLARE
+	i_userid   UUID = i_deviceid;
+	rnd        INTEGER = (SELECT trunc(random() * 1001));
+	o_methodid INTEGER; -- id метода выбора трека
+	owntracks  INTEGER; -- количество "своих" треков пользователя (обрезаем на 900 шт)
+BEGIN
+	-- Выбираем следующий трек
+
+	-- Определяем количество "своих" треков пользователя, ограничивая его 900
+	owntracks = (SELECT COUNT(*)
+				 FROM (
+						  SELECT *
+						  FROM ratings
+						  WHERE userid = i_userid
+								AND ratingsum >= 0
+						  LIMIT 900) AS count);
+
+	-- Если rnd меньше количества "своих" треков, выбираем трек из треков пользователя (добавленных им или прослушанных до конца)
+	-- с положительным рейтингом, за исключением прослушанных за последние сутки
+
+	IF (rnd < owntracks)
+	THEN
+		o_methodid = 2; -- метод выбора из своих треков
+		RETURN QUERY
+		SELECT
+			trackid,
+			o_methodid
+		FROM ratings
+		WHERE userid = i_userid
+			  AND lastlisten < localtimestamp - INTERVAL '1 day'
+			  AND ratingsum >= 0
+			  AND (SELECT isexist
+				   FROM tracks
+				   WHERE recid = trackid) = 1
+			  AND ((SELECT length
+					FROM tracks
+					WHERE recid = trackid) >= 120
+				   OR (SELECT length
+					   FROM tracks
+					   WHERE recid = trackid) IS NULL)
+			  AND ((SELECT iscensorial
+					FROM tracks
+					WHERE recid = trackid) IS NULL
+				   OR (SELECT iscensorial
+					   FROM tracks
+					   WHERE recid = trackid) != 0)
+			  AND trackid NOT IN (SELECT trackid
+								  FROM downloadtracks
+								  WHERE reccreated < localtimestamp - INTERVAL '1 day')
+		ORDER BY RANDOM()
+		LIMIT 1;
+
+		-- Если такой трек найден - выход из функции, возврат найденного значения
+		IF FOUND
+		THEN RETURN;
+		END IF;
+	END IF;
+
+	-- Если rnd больше количества "своих" треков - выбираем случайный трек из ни разу не прослушанных пользователем треков
+	o_methodid = 3; -- метод выбора из непрослушанных треков
+	RETURN QUERY
+	SELECT
+		recid,
+		o_methodid
+	FROM tracks
+	WHERE recid NOT IN
+		  (SELECT trackid
+		   FROM ratings
+		   WHERE userid = i_userid)
+		  AND isexist = 1
+		  AND (iscensorial IS NULL OR iscensorial != 0)
+		  AND (length > 120 OR length IS NULL)
+		  AND recid NOT IN (SELECT trackid
+							FROM downloadtracks
+							WHERE reccreated < localtimestamp - INTERVAL '1 day')
+	ORDER BY RANDOM()
+	LIMIT 1;
+
+	-- Если такой трек найден - выход из функции, возврат найденного значения
+	IF FOUND
+	THEN RETURN;
+	END IF;
+
+	-- Если предыдущие запросы вернули null, выбираем случайный трек
+	o_methodid = 1; -- метод выбора случайного трека
+	RETURN QUERY
+	SELECT
+		recid,
+		o_methodid
+	FROM tracks
+	WHERE isexist = 1
+		  AND (iscensorial IS NULL OR iscensorial != 0)
+		  AND (length > 120 OR length IS NULL)
+	ORDER BY RANDOM()
+	LIMIT 1;
+	RETURN;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+ALTER FUNCTION public.getnexttrackid_v5(uuid)
+  OWNER TO postgres;
   
+  
+  
+-- Function: public.getnexttrackid_v6(uuid)
+
+-- DROP FUNCTION public.getnexttrackid_v6(uuid);
+
+CREATE OR REPLACE FUNCTION public.getnexttrackid_v6(IN i_deviceid uuid)
+  RETURNS TABLE(track uuid, methodid integer) AS
+$BODY$
+DECLARE
+	i_userid   UUID = i_deviceid;
+	rnd        INTEGER = (SELECT trunc(random() * 1001));
+	o_methodid INTEGER; -- id метода выбора трека
+	owntracks  INTEGER; -- количество "своих" треков пользователя (обрезаем на 900 шт)
+	arrusers uuid ARRAY; -- массив пользователей для i_userid с неотрицательнымм коэффициентами схожести интересов
+BEGIN
+	-- Выбираем следующий трек
+
+	-- Определяем количество "своих" треков пользователя, ограничивая его 900
+	owntracks = (SELECT COUNT(*)
+				 FROM (
+						  SELECT *
+						  FROM ratings
+						  WHERE userid = i_userid
+								AND ratingsum >= 0
+						  LIMIT 900) AS count);
+
+	-- Если rnd меньше количества "своих" треков, выбираем трек из треков пользователя (добавленных им или прослушанных до конца)
+	-- с положительным рейтингом, за исключением прослушанных за последние сутки
+
+	IF (rnd < owntracks)
+	THEN
+		o_methodid = 2; -- метод выбора из своих треков
+		RETURN QUERY
+		SELECT
+			trackid,
+			o_methodid
+		FROM ratings
+		WHERE userid = i_userid
+			  AND lastlisten < localtimestamp - INTERVAL '1 day'
+			  AND ratingsum >= 0
+			  AND (SELECT isexist
+				   FROM tracks
+				   WHERE recid = trackid) = 1
+			  AND ((SELECT length
+					FROM tracks
+					WHERE recid = trackid) >= 120
+				   OR (SELECT length
+					   FROM tracks
+					   WHERE recid = trackid) IS NULL)
+			  AND ((SELECT iscensorial
+					FROM tracks
+					WHERE recid = trackid) IS NULL
+				   OR (SELECT iscensorial
+					   FROM tracks
+					   WHERE recid = trackid) != 0)
+			  AND trackid NOT IN (SELECT trackid
+							FROM downloadtracks
+							WHERE reccreated < localtimestamp - INTERVAL '1 day')
+		ORDER BY RANDOM()
+		LIMIT 1;
+
+		-- Если такой трек найден - выход из функции, возврат найденного значения
+		IF FOUND
+		THEN RETURN;
+		END IF;
+	END IF;
+
+	-- Если rnd больше количества "своих" треков - рекомендуем трек из треков пользователя с наибольшим 
+	-- коэффициентом схожести интересов и наибольшим рейтингом прослушивания
+
+	-- Выберем всех пользователей с неотрицательным коэффициентом схожести интересов для i_userid
+	-- отсортировав по убыванию коэффициентов
+	arrusers = (SELECT ARRAY (SELECT CASE WHEN userid1 = i_userid THEN userid2
+							WHEN userid2 = i_userid THEN userid1
+							ELSE NULL
+						END
+						FROM ratios
+						WHERE userid1 = i_userid OR userid2 = i_userid
+							AND ratio >= 0
+						ORDER BY ratio DESC
+						));
+	-- Выбираем пользователя i, с которым у него максимальный коэффициент. Среди его треков ищем трек 
+	-- с максимальным рейтингом прослушивания, за исключением уже прослушанных пользователем i_userid. 
+	-- Если рекомендовать нечего - берем следующего пользователя с наибольшим коэффициентом из оставшихся.
+	FOR i IN 1.. (SELECT COUNT (*) FROM unnest(arrusers)) LOOP
+		o_methodid = 4; -- метод выбора из рекомендованных треков
+		RETURN QUERY
+		SELECT
+			trackid,
+			o_methodid
+			FROM ratings
+			WHERE userid = arrusers[i]
+				AND ratingsum > 0
+				AND trackid NOT IN (SELECT trackid FROM ratings WHERE userid = i_userid)
+				AND trackid NOT IN (SELECT trackid 
+							FROM downloadtracks
+							WHERE userid = i_userid 
+								AND reccreated < localtimestamp - INTERVAL '1 day')
+				AND (SELECT isexist
+					   FROM tracks
+					   WHERE recid = trackid) = 1
+				AND ((SELECT length
+						FROM tracks
+						WHERE recid = trackid) >= 120
+					   OR (SELECT length
+						   FROM tracks
+						   WHERE recid = trackid) IS NULL)
+				AND ((SELECT iscensorial
+						FROM tracks
+						WHERE recid = trackid) IS NULL
+					   OR (SELECT iscensorial
+						   FROM tracks
+						   WHERE recid = trackid) != 0)
+			ORDER BY ratingsum DESC
+			LIMIT 1;
+	-- Если нашли что рекомендовать - выходим из функции
+		IF found THEN
+		RETURN;
+		END IF;
+	END LOOP;
+	
+	-- При отсутствии рекомендаций, выдавать случайный трек из непрослушанных треков с неотрицательным 
+	-- рейтингом среди пользователей со схожим вкусом.
+	FOR i IN 1.. (SELECT COUNT (*) FROM unnest(arrusers)) LOOP
+		o_methodid = 5; -- метод выбора из непрослушанных треков с неотрицательным рейтингом среди пользователей со схожим вкусом
+		RETURN QUERY
+		SELECT
+			recid,
+			o_methodid
+			FROM tracks
+			WHERE recid NOT IN (SELECT trackid FROM ratings WHERE userid = arrusers[i] AND ratingsum < 0)
+				AND recid NOT IN (SELECT trackid FROM ratings WHERE userid = i_userid)
+				AND isexist = 1
+				AND (iscensorial IS NULL OR iscensorial != 0)
+				AND (length > 120 OR length IS NULL)
+				AND recid NOT IN (SELECT trackid
+							FROM downloadtracks
+							WHERE reccreated < localtimestamp - INTERVAL '1 day')
+			ORDER BY RANDOM()
+			LIMIT 1;
+	-- Если нашли что рекомендовать - выходим из функции			
+		IF found THEN
+		RETURN;
+		END IF;
+	END LOOP;
+
+	-- Если таких треков нет - выбираем случайный трек из ни разу не прослушанных пользователем треков
+	o_methodid = 3; -- метод выбора из непрослушанных треков
+	RETURN QUERY
+	SELECT
+		recid,
+		o_methodid
+	FROM tracks
+	WHERE recid NOT IN
+		  (SELECT trackid
+		   FROM ratings
+		   WHERE userid = i_userid)
+		  AND isexist = 1
+		  AND (iscensorial IS NULL OR iscensorial != 0)
+		  AND (length > 120 OR length IS NULL)
+		  AND recid NOT IN (SELECT trackid
+							FROM downloadtracks
+							WHERE reccreated < localtimestamp - INTERVAL '1 day')
+	ORDER BY RANDOM()
+	LIMIT 1;
+
+	-- Если такой трек найден - выход из функции, возврат найденного значения
+	IF FOUND
+	THEN RETURN;
+	END IF;
+
+	-- Если предыдущие запросы вернули null, выбираем случайный трек
+	o_methodid = 1; -- метод выбора случайного трека
+	RETURN QUERY
+	SELECT
+		recid,
+		o_methodid
+	FROM tracks
+	WHERE isexist = 1
+		  AND (iscensorial IS NULL OR iscensorial != 0)
+		  AND (length > 120 OR length IS NULL)
+	ORDER BY RANDOM()
+	LIMIT 1;
+	RETURN;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+ALTER FUNCTION public.getnexttrackid_v6(uuid)
+  OWNER TO postgres;
+
   
 -- Function: public.registertrack(uuid, character varying, character varying, uuid)
 
@@ -581,4 +903,112 @@ $BODY$
   COST 100;
 ALTER FUNCTION public.registertrack(uuid, character varying, character varying, uuid)
   OWNER TO postgres;
+
+  
+-- Function: public.selectdownloadhistory(uuid)
+
+-- DROP FUNCTION public.selectdownloadhistory(uuid);
+
+CREATE OR REPLACE FUNCTION public.selectdownloadhistory(IN i_deviceid uuid)
+  RETURNS TABLE(recid uuid, reccreated timestamp without time zone, recname character varying, recupdated timestamp without time zone, deviceid uuid, trackid uuid, isstatisticback integer) AS
+$BODY$
+	BEGIN
+		-- Выводит список треков по которым не была отдана история прослушивания для данного устройства
+		RETURN QUERY  SELECT * FROM downloadtracks
+		WHERE 
+			downloadtracks.trackid NOT IN
+				(SELECT histories.trackid FROM histories WHERE histories.deviceid = i_deviceid)
+				AND downloadtracks.deviceid = i_deviceid;
+
+	END;
+	$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000;
+ALTER FUNCTION public.selectdownloadhistory(uuid)
+  OWNER TO postgres;
+  
+-- Function: public.calculateratios()
+
+-- DROP FUNCTION public.calculateratios();
+
+CREATE OR REPLACE FUNCTION public.calculateratios()
+  RETURNS void AS
+$BODY$
+-- Функция рассчитывает таблицу коэффициентов схожести интересов для пар пользователей
+DECLARE
+	user1 uuid;
+	user2 uuid;
+	usercount integer = (SELECT COUNT(*) FROM users);
+	arrusers uuid ARRAY = (SELECT ARRAY (SELECT recid FROM users));
+BEGIN
+
+FOR i IN 1..usercount - 1 LOOP
+	FOR j IN i+1..usercount LOOP
+		user1 = arrusers[i];
+		user2 = arrusers[j];
+
+
+	UPDATE ratios set ratio =
+		(SELECT SUM(ratio.ratingsum1 * ratio.ratingsum2) FROM (
+		SELECT DISTINCT recid,
+
+		(SELECT ratingsum 
+		 FROM ratings 
+		 WHERE      (trackid = t.recid) 
+		    AND (userid = user1)) AS ratingsum1,
+
+		(SELECT ratingsum
+		 FROM ratings 
+		 WHERE      (trackid = t.recid) 
+		    AND (userid = user2)) AS ratingsum2
+
+		FROM tracks AS t
+		WHERE recid IN (SELECT trackid
+		  FROM ratings
+		  WHERE trackid IN (SELECT trackid FROM ratings WHERE userid = user1)
+			AND userid = user2)
+		) AS ratio)
+
+		WHERE (userid1 = user1 AND userid2 = user2)
+			OR (userid1 = user2 AND userid2 = user1);
+
+	-- Если таблица была обновлена - выход из функции, иначе - добавим запись
+	IF found THEN
+	CONTINUE;
+	END IF;
+	
+	INSERT INTO public.ratios(
+            userid1, userid2, ratio)
+            VALUES(user1, user2,
+		(SELECT SUM(ratio.ratingsum1 * ratio.ratingsum2) FROM (
+		SELECT DISTINCT recid,
+
+		(SELECT ratingsum 
+		 FROM ratings 
+		 WHERE      (trackid = t.recid) 
+		    AND (userid = user1)) AS ratingsum1,
+
+		(SELECT ratingsum
+		 FROM ratings 
+		 WHERE      (trackid = t.recid) 
+		    AND (userid = user2)) AS ratingsum2
+
+		FROM tracks AS t
+		WHERE recid IN (SELECT trackid
+		  FROM ratings
+		  WHERE trackid IN (SELECT trackid FROM ratings WHERE userid = user1)
+			AND userid = user2)
+		) AS ratio));
+
+	END LOOP;
+END LOOP;
+
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION public.calculateratios()
+  OWNER TO postgres;
+
 

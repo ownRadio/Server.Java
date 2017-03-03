@@ -581,7 +581,7 @@ BEGIN
 					   WHERE recid = trackid) != 0)
 			  AND trackid NOT IN (SELECT trackid
 								  FROM downloadtracks
-								  WHERE reccreated < localtimestamp - INTERVAL '1 day')
+								  WHERE reccreated > localtimestamp - INTERVAL '1 day')
 		ORDER BY RANDOM()
 		LIMIT 1;
 
@@ -607,7 +607,7 @@ BEGIN
 		  AND (length > 120 OR length IS NULL)
 		  AND recid NOT IN (SELECT trackid
 							FROM downloadtracks
-							WHERE reccreated < localtimestamp - INTERVAL '1 day')
+							WHERE reccreated > localtimestamp - INTERVAL '1 day')
 	ORDER BY RANDOM()
 	LIMIT 1;
 
@@ -695,7 +695,7 @@ BEGIN
 					   WHERE recid = trackid) != 0)
 			  AND trackid NOT IN (SELECT trackid
 							FROM downloadtracks
-							WHERE reccreated < localtimestamp - INTERVAL '1 day')
+							WHERE reccreated > localtimestamp - INTERVAL '1 day')
 		ORDER BY RANDOM()
 		LIMIT 1;
 
@@ -734,8 +734,8 @@ BEGIN
 				AND trackid NOT IN (SELECT trackid FROM ratings WHERE userid = i_userid)
 				AND trackid NOT IN (SELECT trackid 
 							FROM downloadtracks
-							WHERE userid = i_userid 
-								AND reccreated < localtimestamp - INTERVAL '1 day')
+							WHERE deviceid = i_deviceid
+								AND reccreated > localtimestamp - INTERVAL '1 day')
 				AND (SELECT isexist
 					   FROM tracks
 					   WHERE recid = trackid) = 1
@@ -775,7 +775,7 @@ BEGIN
 				AND (length > 120 OR length IS NULL)
 				AND recid NOT IN (SELECT trackid
 							FROM downloadtracks
-							WHERE reccreated < localtimestamp - INTERVAL '1 day')
+							WHERE reccreated > localtimestamp - INTERVAL '1 day')
 			ORDER BY RANDOM()
 			LIMIT 1;
 	-- Если нашли что рекомендовать - выходим из функции			
@@ -800,7 +800,7 @@ BEGIN
 		  AND (length > 120 OR length IS NULL)
 		  AND recid NOT IN (SELECT trackid
 							FROM downloadtracks
-							WHERE reccreated < localtimestamp - INTERVAL '1 day')
+							WHERE reccreated > localtimestamp - INTERVAL '1 day')
 	ORDER BY RANDOM()
 	LIMIT 1;
 

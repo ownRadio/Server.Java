@@ -45,15 +45,11 @@ public class TrackServiceImpl implements TrackService {
 	public NextTrack getNextTrackIdV2(UUID deviceId) {
 		NextTrack nextTrack = new NextTrack();
 		List<Object[]> objects = trackRepository.getNextTrackV2(deviceId);
-		try{
-			if(objects != null) {
-				nextTrack.setTrackid(UUID.fromString((String) objects.get(0)[0]));
-				nextTrack.setMethodid((Integer) objects.get(0)[1]);
-				return nextTrack;
-			}else{
-				return null;
-			}
-		}catch (Exception ex){
+		if(objects != null) {
+			nextTrack.setTrackid(UUID.fromString((String) objects.get(0)[0]));
+			nextTrack.setMethodid((Integer) objects.get(0)[1]);
+			return nextTrack;
+		}else{
 			return null;
 		}
 	}

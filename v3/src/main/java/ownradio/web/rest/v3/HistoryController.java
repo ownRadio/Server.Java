@@ -3,7 +3,6 @@ package ownradio.web.rest.v3;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +15,6 @@ import ownradio.service.TrackService;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -64,7 +62,7 @@ public class HistoryController {
 		}
 	}
 
-	//formData
+	//form-data
 	@RequestMapping(value = "/{deviceId}/{trackId}", method = RequestMethod.POST)
 	public ResponseEntity save(@PathVariable UUID deviceId, @PathVariable UUID trackId, HistoryDTO historyDTO) {
 		return getResponseEntity(deviceId, trackId, historyDTO.getHistory());
@@ -78,8 +76,8 @@ public class HistoryController {
 
 	private ResponseEntity getResponseEntity(@PathVariable UUID deviceId, @PathVariable UUID trackId, @RequestBody History history) {
 		try {
-			log.info("{} {}",deviceId.toString(),trackId.toString());
-			log.info("{} {} {}",history.getLastListen(), history.getIsListen(), history.getMethod());
+			log.info("deviceId:{} trackId: {}",deviceId.toString(),trackId.toString());
+			log.info("{} {} {}",history.getLastListen(), history.getIsListen(), history.getMethodid());
 			Track track = trackService.getById(trackId);
 			Device device = deviceService.getById(deviceId);
 
@@ -91,7 +89,7 @@ public class HistoryController {
 			history.setDevice(device);
 
 			historyService.save(history);
-
+			log.info("Save history, rating and update ratios");
 			return new ResponseEntity(HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);

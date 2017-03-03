@@ -275,7 +275,8 @@ BEGIN
 		INSERT INTO users (recid, recname, reccreated) SELECT
 				i_userid,
 				'New user recname',
-				now();
+				now()
+		WHERE NOT EXISTS(SELECT recid FROM users WHERE recid = i_userid);
 
 		-- Добавляем новое устройство
 		INSERT INTO devices (recid, userid, recname, reccreated) SELECT
@@ -326,7 +327,8 @@ DECLARE
     INSERT INTO users (recid, recname, reccreated) SELECT
                                                      i_userid,
                                                      'New user recname',
-                                                     now();
+                                                     now()
+	WHERE NOT EXISTS(SELECT recid FROM users WHERE recid = i_userid);
 
     -- Добавляем новое устройство
     INSERT INTO devices (recid, userid, recname, reccreated) SELECT
@@ -868,7 +870,8 @@ BEGIN
     INSERT INTO users (recid, recname, reccreated) SELECT
                                                i_userid,
                                                'New user recname',
-                                               now();
+                                               now()
+	WHERE NOT EXISTS(SELECT recid FROM users WHERE recid = i_userid);
 
     -- Добавляем новое устройство
     INSERT INTO devices (recid, userid, recname, reccreated) SELECT
@@ -933,82 +936,122 @@ ALTER FUNCTION public.selectdownloadhistory(uuid)
 -- DROP FUNCTION public.calculateratios();
 
 CREATE OR REPLACE FUNCTION public.calculateratios()
-  RETURNS void AS
+  RETURNS boolean AS
 $BODY$
 -- Функция рассчитывает таблицу коэффициентов схожести интересов для пар пользователей
 DECLARE
-	user1 uuid;
-	user2 uuid;
-	usercount integer = (SELECT COUNT(*) FROM users);
-	arrusers uuid ARRAY = (SELECT ARRAY (SELECT recid FROM users));
+	-- объявляем курсор и запрос для него
+		curs1 CURSOR FOR SELECT * FROM(
+				-- рассчитываем матрицу коэффициентов схожести интересов для каждой пары пользователей
+				SELECT r.userid as userid01, r2.userid as userid02, SUM(r.ratingsum * r2.ratingsum) as s
+				FROM ratings r
+					  INNER JOIN ratings r2 ON r.trackid = r2.trackid
+							 AND r.userid != r2.userid
+				GROUP BY r.userid, r2.userid
+				) AS cursor1;
+	cuser1 uuid;
+	cuser2 uuid;
+	cratio integer;
 BEGIN
+	DROP TABLE IF EXISTS temp_ratio;
+	CREATE TEMP TABLE temp_ratio(userid1 uuid, userid2 uuid, ratio integer);
 
-FOR i IN 1..usercount - 1 LOOP
-	FOR j IN i+1..usercount LOOP
-		user1 = arrusers[i];
-		user2 = arrusers[j];
+	OPEN curs1; -- открываем курсор
+	LOOP -- в цикле проходим по строкам результата запроса курсора
+		FETCH curs1 INTO cuser1, cuser2, cratio;
 
-
-	UPDATE ratios set ratio =
-		(SELECT SUM(ratio.ratingsum1 * ratio.ratingsum2) FROM (
-		SELECT DISTINCT recid,
-
-		(SELECT ratingsum 
-		 FROM ratings 
-		 WHERE      (trackid = t.recid) 
-		    AND (userid = user1)) AS ratingsum1,
-
-		(SELECT ratingsum
-		 FROM ratings 
-		 WHERE      (trackid = t.recid) 
-		    AND (userid = user2)) AS ratingsum2
-
-		FROM tracks AS t
-		WHERE recid IN (SELECT trackid
-		  FROM ratings
-		  WHERE trackid IN (SELECT trackid FROM ratings WHERE userid = user1)
-			AND userid = user2)
-		) AS ratio)
-
-		WHERE (userid1 = user1 AND userid2 = user2)
-			OR (userid1 = user2 AND userid2 = user1);
-
-	-- Если таблица была обновлена - выход из функции, иначе - добавим запись
-	IF found THEN
-	CONTINUE;
-	END IF;
-	
-	INSERT INTO public.ratios(
-            userid1, userid2, ratio)
-            VALUES(user1, user2,
-		(SELECT SUM(ratio.ratingsum1 * ratio.ratingsum2) FROM (
-		SELECT DISTINCT recid,
-
-		(SELECT ratingsum 
-		 FROM ratings 
-		 WHERE      (trackid = t.recid) 
-		    AND (userid = user1)) AS ratingsum1,
-
-		(SELECT ratingsum
-		 FROM ratings 
-		 WHERE      (trackid = t.recid) 
-		    AND (userid = user2)) AS ratingsum2
-
-		FROM tracks AS t
-		WHERE recid IN (SELECT trackid
-		  FROM ratings
-		  WHERE trackid IN (SELECT trackid FROM ratings WHERE userid = user1)
-			AND userid = user2)
-		) AS ratio));
-
+		IF NOT FOUND THEN EXIT; -- если данных нет - выходим
+		END IF;
+		-- если для данной пары пользователей уже записан коэффициент - пропускаем, иначе - записываем во временную таблицу
+		IF NOT EXISTS (SELECT * FROM temp_ratio WHERE userid1 = cuser2 AND userid2 = cuser1) THEN
+			INSERT INTO temp_ratio(userid1, userid2, ratio)
+			VALUES (cuser1, cuser2, cratio);
+		END IF;
 	END LOOP;
-END LOOP;
+	CLOSE curs1; -- закрываем курсор
 
+	-- обновляем имеющиеся коэффициенты в таблице ratios
+	UPDATE ratios SET ratio = temp_ratio.ratio FROM temp_ratio
+	WHERE (ratios.userid1 = temp_ratio.userid1 AND ratios.userid2 = temp_ratio.userid2)
+		  OR (ratios.userid1 = temp_ratio.userid2 AND ratios.userid2 = temp_ratio.userid1);
+
+	-- если в ratios меньше пар пользователей, чем во временной таблице - вставляем недостающие записи
+	IF (SELECT COUNT(*) FROM ratios) < (SELECT COUNT(*) FROM temp_ratio) THEN
+		INSERT INTO ratios (userid1, userid2, ratio)
+			(SELECT tr.userid1, tr.userid2, tr.ratio FROM temp_ratio AS tr
+				LEFT OUTER JOIN ratios AS rr ON tr.userid1 = rr.userid1 AND tr.userid2 = rr.userid2
+			WHERE rr.userid1 IS NULL OR rr.userid2 IS NULL
+			);
+	END IF;
+	RETURN TRUE;
 END;
+
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
 ALTER FUNCTION public.calculateratios()
   OWNER TO postgres;
 
+  
+-- Function: public.updateratios(uuid)
 
+-- DROP FUNCTION public.updateratios(uuid);
+
+CREATE OR REPLACE FUNCTION public.updateratios(i_userid uuid)
+  RETURNS boolean AS
+$BODY$
+
+	-- Функция обновляет таблицу коэффициентов схожести интересов для выбранного пользователя
+DECLARE
+	-- объявляем курсор и запрос для него
+		curs1 CURSOR FOR SELECT * FROM(
+				-- рассчитываем матрицу коэффициентов схожести интересов для каждой пары пользователей
+				SELECT r.userid as userid01, r2.userid as userid02, SUM(r.ratingsum * r2.ratingsum) as s
+				FROM ratings r
+				 	INNER JOIN ratings r2 ON r.trackid = r2.trackid
+						   AND r.userid != r2.userid
+						   AND (r.userid = i_userid OR r2.userid = i_userid)
+				GROUP BY r.userid, r2.userid
+				) AS cursor1;
+	cuser1 uuid;
+	cuser2 uuid;
+	cratio integer;
+BEGIN
+	DROP TABLE IF EXISTS temp_ratio;
+	CREATE TEMP TABLE temp_ratio(userid1 uuid, userid2 uuid, ratio integer);
+
+	OPEN curs1; -- открываем курсор
+	LOOP -- в цикле проходим по строкам результата запроса курсора
+		FETCH curs1 INTO cuser1, cuser2, cratio;
+
+		IF NOT FOUND THEN EXIT; -- если данных нет - выходим
+		END IF;
+		-- если для данной пары пользователей уже записан коэффициент - пропускаем, иначе - записываем во временную таблицу
+		IF NOT EXISTS (SELECT * FROM temp_ratio WHERE userid1 = cuser2 AND userid2 = cuser1) THEN
+			INSERT INTO temp_ratio(userid1, userid2, ratio)
+			VALUES (cuser1, cuser2, cratio);
+		END IF;
+	END LOOP;
+	CLOSE curs1; -- закрываем курсор
+
+	-- обновляем имеющиеся коэффициенты в таблице ratios
+	UPDATE ratios SET ratio = temp_ratio.ratio FROM temp_ratio
+	WHERE (ratios.userid1 = temp_ratio.userid1 AND ratios.userid2 = temp_ratio.userid2)
+		  OR (ratios.userid1 = temp_ratio.userid2 AND ratios.userid2 = temp_ratio.userid1);
+
+	-- если в ratios меньше пар пользователей, чем во временной таблице - вставляем недостающие записи
+	IF (SELECT COUNT(*) FROM ratios WHERE userid1 = i_userid or userid2 = i_userid) < (SELECT COUNT(*) FROM temp_ratio) THEN
+		INSERT INTO ratios (userid1, userid2, ratio)
+			(SELECT tr.userid1, tr.userid2, tr.ratio FROM temp_ratio AS tr
+				LEFT OUTER JOIN ratios AS rr ON tr.userid1 = rr.userid1 AND tr.userid2 = rr.userid2
+			WHERE rr.userid1 IS NULL OR rr.userid2 IS NULL
+			);
+	END IF;
+	RETURN TRUE;
+END;
+
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION public.calculateratios()
+  OWNER TO postgres;

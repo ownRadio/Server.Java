@@ -97,7 +97,13 @@ public class TrackController {
 
 	@RequestMapping(value = "/{deviceId}/next", method = RequestMethod.GET)
 	public ResponseEntity<?> getNextTrack(@PathVariable UUID deviceId) {
-		NextTrack nextTrack = trackService.getNextTrackIdV2(deviceId);
+		NextTrack nextTrack = null;
+		try {
+			nextTrack = trackService.getNextTrackIdV2(deviceId);
+		}catch (Exception ex){
+
+		}
+
 		Map<String, String> trackInfo = new HashMap<>();
 		if (nextTrack != null) {
 			try {
@@ -138,7 +144,7 @@ public class TrackController {
 				downloadTrack.setTrack(track);
 				downloadTrack.setDevice(device);
 				downloadTrackRepository.saveAndFlush(downloadTrack);
-
+				log.info("getNextTrack return {}", trackInfo.get("id"));
 				return new ResponseEntity<>(trackInfo, HttpStatus.OK);
 			}catch (Exception ex){
 				log.info("{}", ex.getMessage());

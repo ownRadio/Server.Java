@@ -1,14 +1,17 @@
 package ownradio.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.SqlParameter;
+import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ownradio.domain.DownloadTrack;
 import ownradio.domain.History;
 import ownradio.domain.Rating;
 import ownradio.repository.DownloadTrackRepository;
 import ownradio.repository.HistoryRepository;
 import ownradio.repository.RatingRepository;
+import ownradio.repository.RatioRepository;
 import ownradio.service.HistoryService;
 
 @Service
@@ -16,12 +19,14 @@ public class HistoryServiceImpl implements HistoryService {
 
 	private final HistoryRepository historyRepository;
 	private final RatingRepository ratingRepository;
+	private final RatioRepository ratioRepository;
 	private final DownloadTrackRepository downloadTrackRepository;
 
 	@Autowired
-	public HistoryServiceImpl(HistoryRepository historyRepository, RatingRepository ratingRepository, DownloadTrackRepository downloadTrackRepository) {
+	public HistoryServiceImpl(HistoryRepository historyRepository, RatingRepository ratingRepository, RatioRepository ratioRepository, DownloadTrackRepository downloadTrackRepository) {
 		this.historyRepository = historyRepository;
 		this.ratingRepository = ratingRepository;
+		this.ratioRepository = ratioRepository;
 		this.downloadTrackRepository = downloadTrackRepository;
 	}
 
@@ -44,6 +49,12 @@ public class HistoryServiceImpl implements HistoryService {
 			rating.setLastlisten(history.getLastListen());
 			rating.setRatingsum(history.getIsListen());
 			ratingRepository.saveAndFlush(rating);
+		}
+
+		try {
+			ratioRepository.updateRatios(history.getDevice().getRecid());
+		}catch (Exception ex){
+			ex.printStackTrace();
 		}
 	}
 }

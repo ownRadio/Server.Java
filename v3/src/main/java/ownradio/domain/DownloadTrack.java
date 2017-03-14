@@ -27,4 +27,6 @@ public class DownloadTrack extends AbstractEntity {
 	@JoinColumn(name = "trackid")
 	private Track track;
 
+	private Integer methodid;
+
 }

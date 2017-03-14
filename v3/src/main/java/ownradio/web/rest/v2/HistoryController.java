@@ -47,7 +47,7 @@ public class HistoryController {
 	public ResponseEntity save(@PathVariable UUID deviceId, @PathVariable UUID trackId, @RequestBody History history) {
 		try {
 			log.info("{} {}",deviceId.toString(),trackId.toString());
-			log.info("{} {} {}",history.getLastListen(), history.getIsListen(), history.getMethod());
+			log.info("{} {}",history.getLastListen(), history.getIsListen());
 			Track track = trackService.getById(trackId);
 			Device device = deviceService.getById(deviceId);
 

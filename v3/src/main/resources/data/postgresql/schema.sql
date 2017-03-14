@@ -539,7 +539,7 @@ END;
 LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE FUNCTION public.getnexttrackid_v6(IN i_deviceid uuid)
+CREATE OR REPLACE FUNCTION getnexttrackid_v6(IN i_deviceid uuid)
 	RETURNS TABLE(track uuid, methodid integer) AS
 '
 DECLARE
@@ -697,6 +697,207 @@ BEGIN
 		  AND recid NOT IN (SELECT trackid
 				FROM downloadtracks
 				WHERE reccreated > localtimestamp - INTERVAL ''1 day'')
+	ORDER BY RANDOM()
+	LIMIT 1;
+
+	-- Если такой трек найден - выход из функции, возврат найденного значения
+	IF FOUND
+	THEN RETURN;
+	END IF;
+
+	-- Если предыдущие запросы вернули null, выбираем случайный трек
+	o_methodid = 1; -- метод выбора случайного трека
+	RETURN QUERY
+	SELECT
+		recid,
+		o_methodid
+	FROM tracks
+	WHERE isexist = 1
+		  AND (iscensorial IS NULL OR iscensorial != 0)
+		  AND (length > 120 OR length IS NULL)
+	ORDER BY RANDOM()
+	LIMIT 1;
+	RETURN;
+END;
+'
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION getnexttrackid_v7(IN i_deviceid uuid)
+	RETURNS TABLE(track uuid, methodid integer) AS
+'
+-- Функция выдачи следующего трека пользователю
+-- С учетом рекомендаций от других пользователей
+
+DECLARE
+	i_userid   UUID = i_deviceid;
+	rnd        INTEGER = (SELECT trunc(random() * 1001));
+	o_methodid INTEGER; -- id метода выбора трека
+	owntracks  INTEGER; -- количество "своих" треков пользователя (обрезаем на 900 шт)
+	arrusers uuid ARRAY; -- массив пользователей для i_userid с неотрицательнымм коэффициентами схожести интересов
+	exceptusers uuid ARRAY; -- массив пользователей для i_userid с котороми не было пересечений по трекам
+BEGIN
+	-- Выбираем следующий трек
+
+	-- Определяем количество "своих" треков пользователя, ограничивая его 900
+	owntracks = (SELECT COUNT(*)
+		 FROM (
+				  SELECT *
+				  FROM ratings
+				  WHERE userid = i_userid
+						AND ratingsum >= 0
+				  LIMIT 900) AS count);
+
+	-- Если rnd меньше количества "своих" треков, выбираем трек из треков пользователя (добавленных им или прослушанных до конца)
+	-- с положительным рейтингом, за исключением прослушанных за последние сутки
+
+	IF (rnd < owntracks)
+	THEN
+		o_methodid = 2; -- метод выбора из своих треков
+		RETURN QUERY
+		SELECT
+			trackid,
+			o_methodid
+		FROM ratings
+		WHERE userid = i_userid
+			  AND lastlisten < localtimestamp - INTERVAL ''1 day''
+			  AND ratingsum >= 0
+			  AND (SELECT isexist
+				   FROM tracks
+				   WHERE recid = trackid) = 1
+			  AND ((SELECT length
+					FROM tracks
+					WHERE recid = trackid) >= 120
+				   OR (SELECT length
+					   FROM tracks
+					   WHERE recid = trackid) IS NULL)
+			  AND ((SELECT iscensorial
+					FROM tracks
+					WHERE recid = trackid) IS NULL
+				   OR (SELECT iscensorial
+					   FROM tracks
+					   WHERE recid = trackid) != 0)
+			  AND trackid NOT IN (SELECT trackid
+					  FROM downloadtracks
+					  WHERE reccreated > localtimestamp - INTERVAL ''1 day'')
+		ORDER BY RANDOM()
+		LIMIT 1;
+
+		-- Если такой трек найден - выход из функции, возврат найденного значения
+		IF FOUND
+		THEN RETURN;
+		END IF;
+	END IF;
+
+	-- Если rnd больше количества "своих" треков - рекомендуем трек из треков пользователя с наибольшим
+	-- коэффициентом схожести интересов и наибольшим рейтингом прослушивания
+
+	-- Выберем всех пользователей с неотрицательным коэффициентом схожести интересов для i_userid
+	-- отсортировав по убыванию коэффициентов
+	arrusers = (SELECT ARRAY (SELECT CASE WHEN userid1 = i_userid THEN userid2
+				 WHEN userid2 = i_userid THEN userid1
+				 ELSE NULL
+				 END
+		  FROM ratios
+		  WHERE userid1 = i_userid OR userid2 = i_userid
+									  AND ratio >= 0
+		  ORDER BY ratio DESC
+	));
+	-- Выбираем пользователя i, с которым у него максимальный коэффициент. Среди его треков ищем трек
+	-- с максимальным рейтингом прослушивания, за исключением уже прослушанных пользователем i_userid.
+	-- Если рекомендовать нечего - берем следующего пользователя с наибольшим коэффициентом из оставшихся.
+	FOR i IN 1.. (SELECT COUNT (*) FROM unnest(arrusers)) LOOP
+		o_methodid = 4; -- метод выбора из рекомендованных треков
+		RETURN QUERY
+		SELECT
+			trackid,
+			o_methodid
+		FROM ratings
+		WHERE userid = arrusers[i]
+			  AND ratingsum > 0
+			  AND trackid NOT IN (SELECT trackid FROM ratings WHERE userid = i_userid)
+			  AND trackid NOT IN (SELECT trackid
+						  FROM downloadtracks
+						  WHERE deviceid = i_deviceid
+								AND reccreated > localtimestamp - INTERVAL ''1 day'')
+			  AND (SELECT isexist
+				   FROM tracks
+				   WHERE recid = trackid) = 1
+			  AND ((SELECT length
+					FROM tracks
+					WHERE recid = trackid) >= 120
+				   OR (SELECT length
+					   FROM tracks
+					   WHERE recid = trackid) IS NULL)
+			  AND ((SELECT iscensorial
+					FROM tracks
+					WHERE recid = trackid) IS NULL
+				   OR (SELECT iscensorial
+					   FROM tracks
+					   WHERE recid = trackid) != 0)
+		ORDER BY ratingsum DESC
+		LIMIT 1;
+		-- Если нашли что рекомендовать - выходим из функции
+		IF found THEN
+			RETURN;
+		END IF;
+	END LOOP;
+	-- При отсутствии рекомендаций, выдавать случайный трек из непрослушанных треков с неотрицательным
+	-- рейтингом среди пользователей с которыми не было пересечений по трекам.
+	exceptusers = (SELECT ARRAY (
+		SELECT * FROM (
+			  SELECT recid FROM users WHERE recid != i_userid
+			  EXCEPT
+			  (SELECT CASE WHEN userid1 = i_userid THEN userid2
+					  WHEN userid2 = i_userid THEN userid1
+					  ELSE NULL
+					  END
+			   FROM ratios WHERE userid1 = i_userid OR userid2 = i_userid)
+		  ) AS us
+		ORDER BY RANDOM()
+		)
+	);
+	FOR i IN 1.. (SELECT COUNT (*) FROM unnest(exceptusers)) LOOP
+		o_methodid = 6; -- метод выбора из непрослушанных треков с неотрицательным рейтингом среди пользователей с которыми не было пересечений
+		RETURN QUERY
+		SELECT
+			recid,
+			o_methodid
+		FROM tracks
+		WHERE recid IN (SELECT trackid FROM ratings WHERE userid = exceptusers[i] AND ratingsum >= 0)
+			  AND recid NOT IN (SELECT trackid FROM ratings WHERE userid = i_userid)
+			  AND isexist = 1
+			  AND (iscensorial IS NULL OR iscensorial != 0)
+			  AND (length > 120 OR length IS NULL)
+			  AND recid NOT IN (SELECT trackid
+								FROM downloadtracks
+								WHERE reccreated > localtimestamp - INTERVAL ''1 day'')
+		ORDER BY RANDOM()
+		LIMIT 1;
+		-- Если нашли что рекомендовать - выходим из функции
+		IF found THEN
+			RETURN;
+		ELSE
+
+		END IF;
+	END LOOP;
+
+	-- Если таких треков нет - выбираем случайный трек из ни разу не прослушанных пользователем треков
+	o_methodid = 3; -- метод выбора из непрослушанных треков
+	RETURN QUERY
+	SELECT
+		recid,
+		o_methodid
+	FROM tracks
+	WHERE recid NOT IN
+		  (SELECT trackid
+		   FROM ratings
+		   WHERE userid = i_userid)
+		  AND isexist = 1
+		  AND (iscensorial IS NULL OR iscensorial != 0)
+		  AND (length > 120 OR length IS NULL)
+		  AND recid NOT IN (SELECT trackid
+							FROM downloadtracks
+							WHERE reccreated > localtimestamp - INTERVAL ''1 day'')
 	ORDER BY RANDOM()
 	LIMIT 1;
 

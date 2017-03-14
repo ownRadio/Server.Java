@@ -83,7 +83,8 @@ Content-Type →application/json;charset=UTF-8
   "length": "duration",
   "name": "Title",
   "id": "00000000-0000-0000-0000-000000000000"
-  
+}
+
 ### Сохранение истории треков
 ##### POST /v4/histories/{deviceId}/{trackId}
 * `{trackId}` – UUID прослушанного трека
@@ -94,5 +95,3 @@ Content-Type →application/json;charset=UTF-8
 ##### HttpStatus
 * `200, "OK"` – если все ок
 * `500, "Internal Server Error"` – если произошел сбой на сервере
-  
-}

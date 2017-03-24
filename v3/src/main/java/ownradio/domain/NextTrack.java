@@ -13,4 +13,6 @@ import java.util.UUID;
 public class NextTrack {
 	private UUID trackid;
 	private Integer methodid;
+	private UUID useridrecommended;
+	private String txtrecommendedinfo;
 }

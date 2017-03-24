@@ -1,4 +1,4 @@
-package ownradio.web.rest.v3;
+package ownradio.web.rest.v4;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import ownradio.domain.Device;
 import ownradio.domain.History;
 import ownradio.domain.Track;
-import ownradio.repository.DeviceRepository;
-import ownradio.repository.TrackRepository;
 import ownradio.service.DeviceService;
 import ownradio.service.HistoryService;
 import ownradio.service.TrackService;
@@ -20,11 +18,12 @@ import java.util.Calendar;
 import java.util.UUID;
 
 /**
- * Created by a.polunina on 28.11.2016.
+ * Created by a.polunina on 14.03.2017.
  */
 @Slf4j
-@RestController("HistoryControllerV3")
-@RequestMapping("/v3/histories")
+//@CrossOrigin
+@RestController("HistoryControllerV4")
+@RequestMapping("/v4/histories")
 public class HistoryController {
 	private final HistoryService historyService;
 	private final TrackService trackService;
@@ -79,7 +78,7 @@ public class HistoryController {
 	private ResponseEntity getResponseEntity(@PathVariable UUID deviceId, @PathVariable UUID trackId, @RequestBody History history) {
 		try {
 			if(deviceService.getById(deviceId) == null || trackService.getById(trackId) == null)
-				return new ResponseEntity(HttpStatus.OK);
+				return new ResponseEntity(HttpStatus.BAD_REQUEST);
 
 			log.info("deviceId:{} trackId: {}",deviceId.toString(),trackId.toString());
 			log.info("{} {} {}",history.getLastListen(), history.getIsListen(), history.getMethodid());

@@ -1,7 +1,9 @@
 package ownradio.service;
 
+import org.springframework.data.jpa.repository.Query;
 import ownradio.domain.Device;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -13,4 +15,6 @@ public interface DeviceService {
 	void save(Device device);
 
 	Device getById(UUID uuid);
+
+	List<Device> getByUserid(UUID userid);
 }

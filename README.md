@@ -67,3 +67,31 @@ Content-Type →application/json;charset=UTF-8
 ##### HttpStatus
 * `200, "OK"` – если все ок
 * `500, "Internal Server Error"` – если произошел сбой на сервере
+
+
+Web API v4
+---
+
+### Получение следующего трека с сервера
+##### GET /v4/tracks/{deviceId}/next
+* `{deviceId}` – UUID девайса
+
+##### Response
+Content-Type →application/json;charset=UTF-8
+{
+  "artist": "Artist",
+  "length": "duration",
+  "name": "Title",
+  "id": "00000000-0000-0000-0000-000000000000"
+}
+
+### Сохранение истории треков
+##### POST /v4/histories/{deviceId}/{trackId}
+* `{trackId}` – UUID прослушанного трека
+* `{deviceId}` – UUID устройства где был прослушан трек
+* `lastListen` - Время последнего прослушивания или пропуска трека для данного пользователя ("yyyy-MM-ddTHH:mm:ss")
+* `isListen` - Признак прослушан ли трек до конца:  1 - прослушан, -1 – нет (int)
+
+##### HttpStatus
+* `200, "OK"` – если все ок
+* `500, "Internal Server Error"` – если произошел сбой на сервере

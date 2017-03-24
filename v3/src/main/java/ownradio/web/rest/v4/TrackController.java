@@ -1,4 +1,4 @@
-package ownradio.web.rest.v3;
+package ownradio.web.rest.v4;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -18,14 +18,17 @@ import ownradio.service.TrackService;
 import ownradio.util.ResourceUtil;
 
 import java.io.File;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
- * Created by a.polunina on 28.11.2016.
+ * Created by a.polunina on 14.03.2017.
  */
 @Slf4j
-@RestController("TrackControllerV3")
-@RequestMapping(value = "/v3/tracks")
+//@CrossOrigin
+@RestController("TrackControllerV4")
+@RequestMapping(value = "/v4/tracks")
 public class TrackController {
 
 	private final TrackService trackService;
@@ -121,7 +124,7 @@ public class TrackController {
 
 				if(track.getIscensorial() != null && track.getIscensorial() == 0)
 					return getNextTrack(deviceId);
-				if(track.getLength() <  120)
+				if(track.getLength() != null && track.getLength() <  120)
 					return getNextTrack(deviceId);
 
 				trackInfo.put("id", nextTrack.getTrackid().toString());
@@ -134,18 +137,19 @@ public class TrackController {
 					trackInfo.put("artist", track.getArtist());
 				else
 					trackInfo.put("artist", "Unknown artist");
-				trackInfo.put("methodid", nextTrack.getMethodid().toString());
-
 
 				//Сохраняем информацию об отданном треке
 				Device device = new Device();
 				device.setRecid(deviceId);
+
 				DownloadTrack downloadTrack = new DownloadTrack();
 				downloadTrack.setTrack(track);
 				downloadTrack.setDevice(device);
 				downloadTrack.setMethodid(nextTrack.getMethodid());
+				downloadTrack.setUserrecommend(nextTrack.getUseridrecommended());
+				downloadTrack.setTxtrecommendinfo(nextTrack.getTxtrecommendedinfo());
 				downloadTrackRepository.saveAndFlush(downloadTrack);
-				log.info("getNextTrack return {} {}", nextTrack.getMethodid().toString(), trackInfo.get("id"));
+				log.info("getNextTrack return {} {}", nextTrack.getMethodid(), trackInfo.get("id"));
 				return new ResponseEntity<>(trackInfo, HttpStatus.OK);
 			}catch (Exception ex){
 				log.info("{}", ex.getMessage());

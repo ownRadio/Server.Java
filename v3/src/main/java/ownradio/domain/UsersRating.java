@@ -1,0 +1,33 @@
+package ownradio.domain;
+
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import javax.persistence.TemporalType;
+import java.math.BigInteger;
+import java.util.Calendar;
+import java.util.UUID;
+
+/**
+ * Created by a.polunina on 22.03.2017.
+ */
+@Setter
+@Getter
+public class UsersRating{
+	private UUID userid;
+
+	@DateTimeFormat(pattern = "dd-MM-yyyy'T'H:m:s")
+	//@Temporal(TemporalType.TIMESTAMP)
+	private String reccreated;
+
+	private String recname;
+
+	@DateTimeFormat(pattern = "dd-MM-yyyy'T'H:m:s")
+//	@Temporal(TemporalType.TIMESTAMP)
+	private String recupdated;
+
+	private BigInteger owntracks;
+
+	private BigInteger lasttracks;
+}

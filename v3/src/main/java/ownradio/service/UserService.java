@@ -1,7 +1,9 @@
 package ownradio.service;
 
 import ownradio.domain.User;
+import ownradio.domain.UsersRating;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -13,4 +15,7 @@ public interface UserService {
 	User getById(UUID id);
 
 	User save(User user);
+
+	List<UsersRating> getUsersRating(Integer countRows);
+
 }

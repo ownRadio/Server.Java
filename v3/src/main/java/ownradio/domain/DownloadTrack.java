@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.UUID;
 
 /**
  * Сущность для хранения информации о скаченных треках
@@ -28,5 +29,9 @@ public class DownloadTrack extends AbstractEntity {
 	private Track track;
 
 	private Integer methodid;
+
+	private UUID userrecommend;
+
+	private String txtrecommendinfo;
 
 }

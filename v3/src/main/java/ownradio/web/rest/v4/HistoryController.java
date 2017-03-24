@@ -1,4 +1,4 @@
-package ownradio.web.v4;
+package ownradio.web.rest.v4;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +21,7 @@ import java.util.UUID;
  * Created by a.polunina on 14.03.2017.
  */
 @Slf4j
+//@CrossOrigin
 @RestController("HistoryControllerV4")
 @RequestMapping("/v4/histories")
 public class HistoryController {
@@ -76,6 +77,9 @@ public class HistoryController {
 
 	private ResponseEntity getResponseEntity(@PathVariable UUID deviceId, @PathVariable UUID trackId, @RequestBody History history) {
 		try {
+			if(deviceService.getById(deviceId) == null || trackService.getById(trackId) == null)
+				return new ResponseEntity(HttpStatus.BAD_REQUEST);
+
 			log.info("deviceId:{} trackId: {}",deviceId.toString(),trackId.toString());
 			log.info("{} {} {}",history.getLastListen(), history.getIsListen(), history.getMethodid());
 			Track track = trackService.getById(trackId);

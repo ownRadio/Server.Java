@@ -1,4 +1,4 @@
-package ownradio.web.v4;
+package ownradio.web.rest.v4;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -6,10 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ownradio.domain.Device;
 import ownradio.domain.DownloadTrack;
@@ -29,6 +26,7 @@ import java.util.UUID;
  * Created by a.polunina on 14.03.2017.
  */
 @Slf4j
+//@CrossOrigin
 @RestController("TrackControllerV4")
 @RequestMapping(value = "/v4/tracks")
 public class TrackController {
@@ -126,7 +124,7 @@ public class TrackController {
 
 				if(track.getIscensorial() != null && track.getIscensorial() == 0)
 					return getNextTrack(deviceId);
-				if(track.getLength() <  120)
+				if(track.getLength() != null && track.getLength() <  120)
 					return getNextTrack(deviceId);
 
 				trackInfo.put("id", nextTrack.getTrackid().toString());
@@ -143,12 +141,15 @@ public class TrackController {
 				//Сохраняем информацию об отданном треке
 				Device device = new Device();
 				device.setRecid(deviceId);
+
 				DownloadTrack downloadTrack = new DownloadTrack();
 				downloadTrack.setTrack(track);
 				downloadTrack.setDevice(device);
 				downloadTrack.setMethodid(nextTrack.getMethodid());
+				downloadTrack.setUserrecommend(nextTrack.getUseridrecommended());
+				downloadTrack.setTxtrecommendinfo(nextTrack.getTxtrecommendedinfo());
 				downloadTrackRepository.saveAndFlush(downloadTrack);
-				log.info("getNextTrack return {} {}", nextTrack.getMethodid().toString(), trackInfo.get("id"));
+				log.info("getNextTrack return {} {}", nextTrack.getMethodid(), trackInfo.get("id"));
 				return new ResponseEntity<>(trackInfo, HttpStatus.OK);
 			}catch (Exception ex){
 				log.info("{}", ex.getMessage());

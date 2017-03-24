@@ -6,6 +6,7 @@ import ownradio.domain.Device;
 import ownradio.domain.DownloadTrack;
 import ownradio.domain.Track;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -17,4 +18,6 @@ public interface DownloadTrackRepository extends JpaRepository<DownloadTrack, UU
 
 	DownloadTrack findFirstByDeviceAndTrackOrderByReccreatedAsc(Device device, Track track);
 
+	@Query(value = "select * from getlasttracks(?1, ?2)", nativeQuery = true)
+	List<DownloadTrack> getLastTracksByDevice(UUID deviceid, Integer countTracks);
 }

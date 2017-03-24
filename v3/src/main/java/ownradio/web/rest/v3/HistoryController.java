@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import ownradio.domain.Device;
 import ownradio.domain.History;
 import ownradio.domain.Track;
+import ownradio.repository.DeviceRepository;
+import ownradio.repository.TrackRepository;
 import ownradio.service.DeviceService;
 import ownradio.service.HistoryService;
 import ownradio.service.TrackService;
@@ -76,6 +78,9 @@ public class HistoryController {
 
 	private ResponseEntity getResponseEntity(@PathVariable UUID deviceId, @PathVariable UUID trackId, @RequestBody History history) {
 		try {
+			if(deviceService.getById(deviceId) == null || trackService.getById(trackId) == null)
+				return new ResponseEntity(HttpStatus.OK);
+
 			log.info("deviceId:{} trackId: {}",deviceId.toString(),trackId.toString());
 			log.info("{} {} {}",history.getLastListen(), history.getIsListen(), history.getMethodid());
 			Track track = trackService.getById(trackId);

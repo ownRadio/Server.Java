@@ -144,6 +144,8 @@ public class TrackController {
 				downloadTrack.setTrack(track);
 				downloadTrack.setDevice(device);
 				downloadTrack.setMethodid(nextTrack.getMethodid());
+				downloadTrack.setUserrecommend(nextTrack.getUseridrecommended());
+				downloadTrack.setTxtrecommendinfo(nextTrack.getTxtrecommendedinfo());
 				downloadTrackRepository.saveAndFlush(downloadTrack);
 				log.info("getNextTrack return {} {}", nextTrack.getMethodid().toString(), trackInfo.get("id"));
 				return new ResponseEntity<>(trackInfo, HttpStatus.OK);

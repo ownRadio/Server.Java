@@ -462,7 +462,7 @@ BEGIN
 		IF NOT FOUND THEN EXIT; -- если данных нет - выходим
 		END IF;
 		-- если для данной пары пользователей уже записан коэффициент - пропускаем, иначе - записываем во временную таблицу
-		IF NOT EXISTS (SELECT * FROM temp_ratio WHERE userid1 = cuser2 AND userid2 = cuser1) THEN
+		IF NOT EXISTS (SELECT * FROM temp_ratio WHERE userid1 = cuser2 AND userid2 = cuser1 OR userid1 = cuser1 AND userid2 = cuser2) THEN
 			INSERT INTO temp_ratio(userid1, userid2, ratio)
 			VALUES (cuser1, cuser2, cratio);
 		END IF;
@@ -517,7 +517,7 @@ BEGIN
 		IF NOT FOUND THEN EXIT; -- если данных нет - выходим
 		END IF;
 		-- если для данной пары пользователей уже записан коэффициент - пропускаем, иначе - записываем во временную таблицу
-		IF NOT EXISTS (SELECT * FROM temp_ratio WHERE userid1 = cuser2 AND userid2 = cuser1) THEN
+		IF NOT EXISTS (SELECT * FROM temp_ratio WHERE userid1 = cuser2 AND userid2 = cuser1 OR userid1 = cuser1 AND userid2 = cuser2) THEN
 			INSERT INTO temp_ratio(userid1, userid2, ratio)
 			VALUES (cuser1, cuser2, cratio);
 		END IF;
@@ -1021,7 +1021,7 @@ BEGIN
 			arrusers[i],
 			(SELECT CAST((ratio) AS CHARACTER VARYING)
 			 FROM ratios
-			 WHERE userid1 = i_userid AND userid2 = arrusers[i] OR userid2 = i_userid AND userid1 = arrusers[i])
+			 WHERE userid1 = i_userid AND userid2 = arrusers[i] OR userid2 = i_userid AND userid1 = arrusers[i]  LIMIT 1)
 		FROM ratings
 		WHERE userid = arrusers[i]
 			  AND ratingsum > 0

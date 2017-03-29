@@ -107,10 +107,21 @@ public class TrackController {
 
 		}
 
+
 		Map<String, String> trackInfo = new HashMap<>();
 		if (nextTrack != null) {
 			try {
 				Track track = trackRepository.findOne(nextTrack.getTrackid());
+				//Сохраняем информацию об отданном треке
+//				Device device = new Device();
+//				device.setRecid(deviceId);
+//				DownloadTrack downloadTrack = new DownloadTrack();
+//				downloadTrack.setTrack(track);
+//				downloadTrack.setDevice(device);
+//				downloadTrack.setMethodid(nextTrack.getMethodid());
+//				downloadTrack.setUserrecommend(nextTrack.getUseridrecommended());
+//				downloadTrack.setTxtrecommendinfo(nextTrack.getTxtrecommendedinfo());
+//				downloadTrackRepository.saveAndFlush(downloadTrack);
 
 				File file = new File(track.getPath());
 				if(!file.exists()){
@@ -138,17 +149,8 @@ public class TrackController {
 				else
 					trackInfo.put("artist", "Unknown artist");
 
-				//Сохраняем информацию об отданном треке
-				Device device = new Device();
-				device.setRecid(deviceId);
 
-				DownloadTrack downloadTrack = new DownloadTrack();
-				downloadTrack.setTrack(track);
-				downloadTrack.setDevice(device);
-				downloadTrack.setMethodid(nextTrack.getMethodid());
-				downloadTrack.setUserrecommend(nextTrack.getUseridrecommended());
-				downloadTrack.setTxtrecommendinfo(nextTrack.getTxtrecommendedinfo());
-				downloadTrackRepository.saveAndFlush(downloadTrack);
+
 				log.info("getNextTrack return {} {}", nextTrack.getMethodid(), trackInfo.get("id"));
 				return new ResponseEntity<>(trackInfo, HttpStatus.OK);
 			}catch (Exception ex){

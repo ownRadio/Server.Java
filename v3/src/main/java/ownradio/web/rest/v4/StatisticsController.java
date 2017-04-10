@@ -7,7 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ownradio.domain.Device;
 import ownradio.domain.DownloadTrack;
+import ownradio.domain.TracksHistory;
 import ownradio.domain.UsersRating;
+import ownradio.repository.DeviceRepository;
 import ownradio.service.DeviceService;
 import ownradio.service.DownloadTrackService;
 import ownradio.service.UserService;
@@ -69,6 +71,26 @@ public class StatisticsController {
 			List<UsersRating> usersRating = userService.getUsersRating(countRows);
 
 			return new ResponseEntity<>(usersRating, HttpStatus.OK);
+		}catch (Exception ex){
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
+	@RequestMapping(value = "/{deviceId}/{countTracks}/gettrackshistorybydevice", method = RequestMethod.GET)
+	public ResponseEntity<?> getTracksHistoryByDevice(@PathVariable UUID deviceId, @PathVariable Integer countTracks) {
+		try {
+			List<TracksHistory> tracksHistories = downloadTrackService.getTracksHistoryByDevice(deviceId, countTracks);
+			return new ResponseEntity<>(tracksHistories, HttpStatus.OK);
+		}catch (Exception ex){
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
+	@RequestMapping(value = "/getlastdevices", method = RequestMethod.GET)
+	public ResponseEntity<?> getLastDevices() {
+		try{
+			List<Device> lastActiveDevices = deviceService.getLastDevices();
+			return new ResponseEntity<>(lastActiveDevices, HttpStatus.OK);
 		}catch (Exception ex){
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}

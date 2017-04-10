@@ -16,4 +16,9 @@ public interface DeviceRepository extends JpaRepository<Device, UUID> {
 	@Query(value = "select * from devices where userid = ?1", nativeQuery = true)
 	List<Device> getUserDevices(UUID userid);
 
+	@Query(value = "select * from registerdevice(?1, ?2)", nativeQuery = true)
+	boolean registerdevice(UUID deviceId, String deviceName);
+
+	@Query(value = "select * from getlastdevices()", nativeQuery = true)
+	List<String> getLastDevices();
 }

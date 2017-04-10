@@ -71,6 +71,14 @@ Content-Type →application/json;charset=UTF-8
 
 Web API v4
 ---
+### Регистрация нового устройства
+##### GET /v4/devices/{deviceId}/{deviceName}/registerdevice
+* `{deviceId}` - UUID устройства
+* `{deviceName}` - название устройства (может отсутсвтваовать)
+##### HttpStatus
+* `200, "OK"` – если все ок
+* `400, "Bad Request"` - Если пользователь ввел некорректные данные
+
 
 ### Получение следующего трека с сервера
 ##### GET /v4/tracks/{deviceId}/next
@@ -94,4 +102,5 @@ Content-Type →application/json;charset=UTF-8
 
 ##### HttpStatus
 * `200, "OK"` – если все ок
+* `404, "Not found"` - если deviceId или trackid не найден
 * `500, "Internal Server Error"` – если произошел сбой на сервере

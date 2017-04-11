@@ -17,4 +17,6 @@ public interface DeviceService {
 	Device getById(UUID uuid);
 
 	List<Device> getByUserid(UUID userid);
+
+	List<Device> getLastDevices();
 }

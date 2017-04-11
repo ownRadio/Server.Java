@@ -78,7 +78,7 @@ public class HistoryController {
 	private ResponseEntity getResponseEntity(@PathVariable UUID deviceId, @PathVariable UUID trackId, @RequestBody History history) {
 		try {
 			if(deviceService.getById(deviceId) == null || trackService.getById(trackId) == null)
-				return new ResponseEntity(HttpStatus.BAD_REQUEST);
+				return new ResponseEntity(HttpStatus.NOT_FOUND);
 
 			log.info("deviceId:{} trackId: {}",deviceId.toString(),trackId.toString());
 			log.info("{} {} {}",history.getLastListen(), history.getIsListen(), history.getMethodid());

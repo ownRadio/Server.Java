@@ -4,9 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.persistence.TemporalType;
 import java.math.BigInteger;
-import java.util.Calendar;
 import java.util.UUID;
 
 /**

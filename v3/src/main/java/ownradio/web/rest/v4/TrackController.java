@@ -148,6 +148,7 @@ public class TrackController {
 					trackInfo.put("artist", track.getArtist());
 				else
 					trackInfo.put("artist", "Unknown artist");
+				trackInfo.put("pathupload", track.getLocaldevicepathupload());
 
 
 

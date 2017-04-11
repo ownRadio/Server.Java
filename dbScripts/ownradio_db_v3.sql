@@ -1267,3 +1267,55 @@ $BODY$
   ROWS 1000;
 ALTER FUNCTION getnexttrackid_v7(uuid)
   OWNER TO "postgres";
+
+
+-- Function: public.getrecommendedtrackid_v1(uuid)
+
+-- DROP FUNCTION public.getrecommendedtrackid_v1(uuid);
+
+CREATE OR REPLACE FUNCTION public.getrecommendedtrackid_v1(userid uuid)
+  RETURNS uuid AS
+$BODY$
+
+DECLARE
+preferenced_track uuid;
+
+BEGIN
+	-- Соединяем таблицу tracks с таблицой сумм произведений рейтинга трека на коэффициент
+	-- у конкретного пользователя для возможности вывода дополнительной информации о треке
+	-- в отладочных целях
+  	SELECT tracks.recid INTO preferenced_track
+  	--tracks.recid, table2.sum_rate, tracks.localdevicepathupload, tracks.path
+				FROM tracks
+				INNER JOIN (
+					-- Группируем по треку и считаем сумму произведений рейтингов на коэффициент для
+					-- каждого из них
+					SELECT trackid, SUM(track_rating) AS sum_rate
+					FROM(
+						-- Запрашиваем таблицу с рейтингом всех треков, оцененных пользователями, которые имеют коэффициент
+						-- с исходным, умноженным на их коэффициент
+						SELECT ratings.trackid, ratings.ratingsum * ratios.ratio AS track_rating, ratings.userid, ratios.ratio
+						FROM ratings, ratios
+						-- Будем считать рейтинги треков, только у пользователей с положительным коэффициентом с исходным
+						WHERE ratios.ratio > 0 AND (ratings.userid = ratios.userid2 AND ratios.userid1 = $1 OR ratings.userid = ratios.userid1 AND ratios.userid2 = $1)
+					) AS TracksRatings
+					GROUP BY trackid
+					ORDER BY sum_rate DESC
+				) AS table2
+				ON tracks.recid = table2.trackid
+				AND tracks.isexist = 1
+				AND tracks.iscensorial <> 0
+				AND tracks.length >= 120
+				AND tracks.recid NOT IN (SELECT trackid FROM downloadtracks
+ 						         WHERE reccreated > localtimestamp - INTERVAL '1 day')
+				-- В итоге рекомендоваться будут только треки с положительной суммой произведений рейтингов на коэффициенты
+				AND sum_rate > 0
+				ORDER BY table2.sum_rate DESC
+				LIMIT 1;
+	RETURN preferenced_track;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION public.getrecommendedtrackid_v1(uuid)
+  OWNER TO postgres;

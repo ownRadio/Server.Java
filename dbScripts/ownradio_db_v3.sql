@@ -1273,7 +1273,7 @@ ALTER FUNCTION getnexttrackid_v7(uuid)
 
 -- DROP FUNCTION public.getrecommendedtrackid_v1(uuid);
 
-CREATE OR REPLACE FUNCTION public.getrecommendedtrackid_v1(userid uuid)
+CREATE OR REPLACE FUNCTION public.getrecommendedtrackid_v1(in_userid uuid)
   RETURNS uuid AS
 $BODY$
 
@@ -1294,20 +1294,30 @@ BEGIN
 					FROM(
 						-- Запрашиваем таблицу с рейтингом всех треков, оцененных пользователями, которые имеют коэффициент
 						-- с исходным, умноженным на их коэффициент
-						SELECT ratings.trackid, ratings.ratingsum * ratios.ratio AS track_rating, ratings.userid, ratios.ratio
+						SELECT ratings_table.trackid, ratings_table.ratingsum * ratios.ratio AS track_rating, ratings_table.userid, ratios.ratio
 						FROM	--ratings,
-							(SELECT ratings.trackid, ratings.ratingsum, ratings.userid FROM ratings WHERE ratings.userid <> $1) AS ratings_table,
+							-- Выбирем все оценки треков, кроме оценок, данных исходным пользователем
+							(SELECT ratings.trackid, ratings.ratingsum, ratings.userid FROM ratings WHERE ratings.userid <> in_userid) AS ratings_table,
 							ratios
-						-- Будем считать рейтинги треков, только у пользователей с положительным коэффициентом с исходным
-						WHERE ratios.ratio > 0 AND (ratings.userid = ratios.userid2 AND ratios.userid1 = $1 OR ratings.userid = ratios.userid1 AND ratios.userid2 = $1)
+						-- Считать рейтинги треков, только у пользователей с положительным коэффициентом совпадения вкусов с исходным
+						WHERE ratios.ratio > 0 
+							-- Выбираем рейтинги треков у тех пользователей, у которых есть пересечение
+							-- с исходным в таблице ratios (кэффициенты совпадения вкусов), проверяя сначала
+							-- с левой стороны
+							AND ((ratings_table.userid = ratios.userid2 AND ratios.userid1 = in_userid)
+								-- потом с правой
+								OR (ratings_table.userid = ratios.userid1 AND ratios.userid2 = in_userid))	
 					) AS TracksRatings
 					GROUP BY trackid
 					ORDER BY sum_rate DESC
 				) AS table2
 				ON tracks.recid = table2.trackid
+				-- Трек должен существовать на сервере
 				AND tracks.isexist = 1
+				-- Трек не должен быть помечен как нецензурный
 				AND tracks.iscensorial <> 0
 				AND tracks.length >= 120
+				-- Трек не должен был выдаваться в течении последних суток
 				AND tracks.recid NOT IN (SELECT trackid FROM downloadtracks
  						         WHERE reccreated > localtimestamp - INTERVAL '1 day')
 				-- В итоге рекомендоваться будут только треки с положительной суммой произведений рейтингов на коэффициенты

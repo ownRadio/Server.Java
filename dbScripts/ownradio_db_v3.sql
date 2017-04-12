@@ -1312,16 +1312,13 @@ BEGIN
 					ORDER BY sum_rate DESC
 				) AS table2
 				ON tracks.recid = table2.trackid
-				-- Трек должен существовать на сервере
-				AND tracks.isexist = 1
-				-- Трек не должен быть помечен как нецензурный
-				AND tracks.iscensorial <> 0
+				AND tracks.isexist = 1 -- Трек должен существовать на сервере
+				AND tracks.iscensorial <> 0 -- Трек не должен быть помечен как нецензурный
 				AND tracks.length >= 120
-				-- Трек не должен был выдаваться в течении последних суток
+				-- Трек не должен был выдаваться в течении последних двух месяцев
 				AND tracks.recid NOT IN (SELECT trackid FROM downloadtracks
- 						         WHERE reccreated > localtimestamp - INTERVAL '1 day')
-				-- В итоге рекомендоваться будут только треки с положительной суммой произведений рейтингов на коэффициенты
-				AND sum_rate > 0
+ 						         WHERE reccreated > localtimestamp - INTERVAL '2 months')
+				AND sum_rate > 0 -- В итоге рекомендоваться будут только треки с положительной суммой произведений рейтингов на коэффициенты
 				ORDER BY table2.sum_rate DESC
 				LIMIT 1;
 	RETURN preferenced_track;

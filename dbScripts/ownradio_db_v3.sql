@@ -1295,7 +1295,9 @@ BEGIN
 						-- Запрашиваем таблицу с рейтингом всех треков, оцененных пользователями, которые имеют коэффициент
 						-- с исходным, умноженным на их коэффициент
 						SELECT ratings.trackid, ratings.ratingsum * ratios.ratio AS track_rating, ratings.userid, ratios.ratio
-						FROM ratings, ratios
+						FROM	--ratings,
+							(SELECT ratings.trackid, ratings.ratingsum, ratings.userid FROM ratings WHERE ratings.userid <> $1) AS ratings_table,
+							ratios
 						-- Будем считать рейтинги треков, только у пользователей с положительным коэффициентом с исходным
 						WHERE ratios.ratio > 0 AND (ratings.userid = ratios.userid2 AND ratios.userid1 = $1 OR ratings.userid = ratios.userid1 AND ratios.userid2 = $1)
 					) AS TracksRatings

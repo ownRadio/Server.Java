@@ -1283,42 +1283,40 @@ preferenced_track uuid;
 BEGIN
 	-- Соединяем таблицу tracks с таблицой сумм произведений рейтинга трека на коэффициент
 	-- у конкретного пользователя для возможности вывода дополнительной информации о треке
-	-- в отладочных целях
+	-- в отладочных целях и для фильтра по столбцам tracks
   	SELECT tracks.recid INTO preferenced_track
   	--tracks.recid, table2.sum_rate, tracks.localdevicepathupload, tracks.path
 				FROM tracks
 				INNER JOIN (
-					-- Группируем по треку и считаем сумму произведений рейтингов на коэффициент для
-					-- каждого из них
+					--Группируем по треку и считаем сумму произведений рейтингов на коэффициент для
+					--каждого из них
 					SELECT trackid, SUM(track_rating) AS sum_rate
 					FROM(
-						-- Запрашиваем таблицу с рейтингом всех треков, оцененных пользователями, которые имеют коэффициент
-						-- с исходным, умноженным на их коэффициент
-						SELECT ratings_table.trackid, ratings_table.ratingsum * ratios.ratio AS track_rating, ratings_table.userid, ratios.ratio
-						FROM	--ratings,
-							-- Выбирем все оценки треков, кроме оценок, данных исходным пользователем
-							(SELECT ratings.trackid, ratings.ratingsum, ratings.userid FROM ratings WHERE ratings.userid <> in_userid) AS ratings_table,
-							ratios
-						-- Считать рейтинги треков, только у пользователей с положительным коэффициентом совпадения вкусов с исходным
-						WHERE ratios.ratio > 0 
-							-- Выбираем рейтинги треков у тех пользователей, у которых есть пересечение
-							-- с исходным в таблице ratios (кэффициенты совпадения вкусов), проверяя сначала
-							-- с левой стороны
-							AND ((ratings_table.userid = ratios.userid2 AND ratios.userid1 = in_userid)
+						--Запрашиваем таблицу с рейтингом всех треков, оцененных пользователями, которые имеют коэффициент
+						--с исходным, умноженным на их коэффициент
+						SELECT ratings.trackid, ratings.ratingsum * ratios.ratio AS track_rating, ratings.userid, ratios.ratio
+						FROM ratings
+							INNER JOIN ratios
+							--Выбираем рейтинги треков у тех пользователей, у которых есть пересечение
+							--с исходным в таблице ratios (кэффициенты совпадения вкусов), проверяя сначала
+							--с левой стороны
+							ON ((ratings.userid = ratios.userid2 AND ratios.userid1 = in_userid)
 								-- потом с правой
-								OR (ratings_table.userid = ratios.userid1 AND ratios.userid2 = in_userid))	
+								OR (ratings.userid = ratios.userid1 AND ratios.userid2 = in_userid))
+							AND ratings.userid <> in_userid --Выбирем все оценки треков, кроме оценок, данных исходным пользователем
+							AND ratios.ratio > 0 --Считать рейтинги треков, только у пользователей с положительным коэффициентом совпадения вкусов с исходным
 					) AS TracksRatings
 					GROUP BY trackid
 					ORDER BY sum_rate DESC
 				) AS table2
 				ON tracks.recid = table2.trackid
-				AND tracks.isexist = 1 -- Трек должен существовать на сервере
-				AND tracks.iscensorial <> 0 -- Трек не должен быть помечен как нецензурный
+				AND tracks.isexist = 1 --Трек должен существовать на сервере
+				AND tracks.iscensorial <> 0 --Трек не должен быть помечен как нецензурный
 				AND tracks.length >= 120
-				-- Трек не должен был выдаваться в течении последних двух месяцев
+				--Трек не должен был выдаваться в течении последних двух месяцев
 				AND tracks.recid NOT IN (SELECT trackid FROM downloadtracks
  						         WHERE reccreated > localtimestamp - INTERVAL '2 months')
-				AND sum_rate > 0 -- В итоге рекомендоваться будут только треки с положительной суммой произведений рейтингов на коэффициенты
+				AND sum_rate > 0 --В итоге рекомендоваться будут только треки с положительной суммой произведений рейтингов на коэффициенты
 				ORDER BY table2.sum_rate DESC
 				LIMIT 1;
 	RETURN preferenced_track;

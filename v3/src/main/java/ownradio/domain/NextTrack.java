@@ -3,6 +3,7 @@ package ownradio.domain;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.sql.Time;
 import java.util.UUID;
 
 /**
@@ -15,4 +16,5 @@ public class NextTrack {
 	private Integer methodid;
 	private UUID useridrecommended;
 	private String txtrecommendedinfo;
+	private String timeexecute;
 }

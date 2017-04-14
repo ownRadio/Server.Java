@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ownradio.domain.Device;
-import ownradio.domain.DownloadTrack;
 import ownradio.domain.NextTrack;
 import ownradio.domain.Track;
 import ownradio.repository.DownloadTrackRepository;
@@ -104,7 +103,8 @@ public class TrackController {
 		try {
 			nextTrack = trackService.getNextTrackIdV2(deviceId);
 		}catch (Exception ex){
-
+			log.info("{}", ex.getMessage());
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 
 
@@ -112,16 +112,6 @@ public class TrackController {
 		if (nextTrack != null) {
 			try {
 				Track track = trackRepository.findOne(nextTrack.getTrackid());
-				//Сохраняем информацию об отданном треке
-//				Device device = new Device();
-//				device.setRecid(deviceId);
-//				DownloadTrack downloadTrack = new DownloadTrack();
-//				downloadTrack.setTrack(track);
-//				downloadTrack.setDevice(device);
-//				downloadTrack.setMethodid(nextTrack.getMethodid());
-//				downloadTrack.setUserrecommend(nextTrack.getUseridrecommended());
-//				downloadTrack.setTxtrecommendinfo(nextTrack.getTxtrecommendedinfo());
-//				downloadTrackRepository.saveAndFlush(downloadTrack);
 
 				File file = new File(track.getPath());
 				if(!file.exists()){
@@ -150,6 +140,7 @@ public class TrackController {
 					trackInfo.put("artist", "Unknown artist");
 				trackInfo.put("pathupload", track.getLocaldevicepathupload());
 
+				trackInfo.put("timeexecute", nextTrack.getTimeexecute());
 
 
 				log.info("getNextTrack return {} {}", nextTrack.getMethodid(), trackInfo.get("id"));

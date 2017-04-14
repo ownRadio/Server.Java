@@ -921,3 +921,66 @@ BEGIN
 END;
 '
 LANGUAGE plpgsql;
+
+
+
+
+CREATE OR REPLACE FUNCTION getnexttrack_v2(IN i_deviceid uuid)
+	RETURNS TABLE(track character varying, method integer, useridrecommended character varying, txtrecommendedinfo character varying, timeexecute character varying) AS
+'
+DECLARE
+		declare t timestamptz := clock_timestamp(); -- запоминаем начальное время выполнения процедуры
+		i_userid UUID = i_deviceid; -- в дальнейшем заменить получением userid по deviceid
+BEGIN
+	-- Добавляем устройство, если его еще не существует
+	-- Если ID устройства еще нет в БД
+	IF NOT EXISTS(SELECT recid
+				  FROM devices
+				  WHERE recid = i_deviceid)
+	THEN
+
+		-- Добавляем нового пользователя
+		INSERT INTO users (recid, recname, reccreated) SELECT
+							   i_userid,
+							   ''New user recname'',
+							   now()
+						   WHERE NOT EXISTS(SELECT recid FROM users WHERE recid = i_userid);
+
+		-- Добавляем новое устройство
+		INSERT INTO devices (recid, userid, recname, reccreated) SELECT
+							 i_deviceid,
+							 i_userid,
+							 ''New device recname'',
+							 now();
+	ELSE
+		SELECT (SELECT userid
+				FROM devices
+				WHERE recid = i_deviceid
+				LIMIT 1)
+		INTO i_userid;
+	END IF;
+
+	-- Возвращаем trackid, конвертируя его в character varying, и methodid
+	RETURN QUERY SELECT
+					 CAST((nexttrack.track) AS CHARACTER VARYING),
+					 nexttrack.methodid,
+					 CAST((nexttrack.useridrecommended) AS CHARACTER VARYING),
+					 nexttrack.txtrecommendedinfo,
+					 CAST((clock_timestamp() - t ) AS CHARACTER VARYING) -- возвращаем время выполнения процедуры
+				 FROM getnexttrackid_v13(i_deviceid) AS nexttrack;
+END;
+'
+LANGUAGE plpgsql;
+
+ALTER FUNCTION getnexttrack_v2(uuid) OWNER TO postgres;
+ALTER FUNCTION calculateratios() OWNER TO postgres;
+ALTER FUNCTION updateratios(uuid) OWNER TO postgres;
+ALTER FUNCTION getlastdevices() OWNER TO postgres;
+ALTER FUNCTION getlasttracks(uuid, integer) OWNER TO postgres;
+ALTER FUNCTION getnexttrack(uuid) OWNER TO postgres;
+ALTER FUNCTION getnexttrackid(uuid) OWNER TO postgres;
+ALTER FUNCTION gettrackshistorybydevice(uuid, integer) OWNER TO postgres;
+ALTER FUNCTION getuserdevices(uuid) OWNER TO postgres;
+ALTER FUNCTION getusersrating(integer) OWNER TO postgres;
+ALTER FUNCTION registerdevice(uuid, character varying) OWNER TO postgres;
+ALTER FUNCTION registertrack(uuid, character varying, character varying, uuid) OWNER TO postgres;

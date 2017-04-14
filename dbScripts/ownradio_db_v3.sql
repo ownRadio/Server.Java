@@ -1313,11 +1313,14 @@ BEGIN
 				AND tracks.isexist = 1 --Трек должен существовать на сервере
 				AND tracks.iscensorial <> 0 --Трек не должен быть помечен как нецензурный
 				AND tracks.length >= 120
-				--Трек не должен был выдаваться в течении последних двух месяцев
+				--Трек не должен был выдаваться исходному пользователю в течении последних двух месяцев
 				AND tracks.recid NOT IN (SELECT trackid FROM downloadtracks
- 						         WHERE reccreated > localtimestamp - INTERVAL '2 months')
+ 						         WHERE reccreated > localtimestamp - INTERVAL '2 months' AND deviceid = in_userid)
 				AND sum_rate > 0 --В итоге рекомендоваться будут только треки с положительной суммой произведений рейтингов на коэффициенты
 				ORDER BY table2.sum_rate DESC
+					 --Сортировка по второму столбцу нужна для случаев, когда получаем много треков с одинковым table2.sum_rate,
+					 --в таких случаях план выполнения запроса меняется и производительность сильно падает
+					 ,tracks.recid
 				LIMIT 1;
 	RETURN preferenced_track;
 END;
@@ -1326,3 +1329,4 @@ $BODY$
   COST 100;
 ALTER FUNCTION public.getrecommendedtrackid_v1(uuid)
   OWNER TO postgres;
+

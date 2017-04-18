@@ -10,6 +10,8 @@ import ownradio.repository.RatingRepository;
 import ownradio.repository.RatioRepository;
 import ownradio.service.HistoryService;
 
+import java.util.UUID;
+
 @Service
 public class HistoryServiceImpl implements HistoryService {
 
@@ -22,6 +24,11 @@ public class HistoryServiceImpl implements HistoryService {
 		this.historyRepository = historyRepository;
 		this.ratingRepository = ratingRepository;
 		this.ratioRepository = ratioRepository;
+	}
+
+	@Override
+	public History getById(UUID uuid) {
+		return historyRepository.findOne(uuid);
 	}
 
 	@Transactional

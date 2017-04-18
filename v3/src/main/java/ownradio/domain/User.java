@@ -21,4 +21,5 @@ public class User extends AbstractEntity {
 	public User(String name) {
 		setRecname(name);
 	}
+	public Integer experience;
 }

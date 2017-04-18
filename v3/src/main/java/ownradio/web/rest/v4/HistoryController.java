@@ -15,6 +15,7 @@ import ownradio.service.TrackService;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -81,7 +82,7 @@ public class HistoryController {
 				return new ResponseEntity(HttpStatus.NOT_FOUND);
 
 			log.info("deviceId:{} trackId: {}",deviceId.toString(),trackId.toString());
-			log.info("{} {} {}",history.getLastListen(), history.getIsListen(), history.getMethodid());
+			log.info("{} {} {} {}",history.getRecid(), history.getLastListen(), history.getIsListen(), history.getMethodid());
 			Track track = trackService.getById(trackId);
 			Device device = deviceService.getById(deviceId);
 
@@ -89,11 +90,34 @@ public class HistoryController {
 				throw new RuntimeException("Track or Device is null");
 			}
 
-			history.setTrack(track);
-			history.setDevice(device);
-
-			historyService.save(history);
-			log.info("Save history, rating and update ratios");
+//			if(historyService.getById(history.getRecid()) == null) {
+//				History newHistory = history;
+//				newHistory.setRecid(newHistory.getRecid());
+			if(history.getRecid() != null){
+				History historyTemp = historyService.getById(history.getRecid());
+				if(historyTemp != null){
+					historyTemp.setCountsend(((historyTemp.getCountsend()==null?0:historyTemp.getCountsend())) + 1);
+//					historyTemp.setComment(historyTemp.getComment() + (new Date()).toString() + "; ");
+					historyService.save(historyTemp);
+					return new ResponseEntity(HttpStatus.ALREADY_REPORTED);
+				} else {
+					historyTemp = new History();
+					historyTemp.setRecid(history.getRecid());
+					historyTemp.setTrack(track);
+					historyTemp.setDevice(device);
+					historyTemp.setCountsend(1);
+					historyTemp.setIsListen(history.getIsListen());
+					historyTemp.setLastListen(history.getLastListen());
+					historyService.save(historyTemp);
+				}
+			} else {
+				history.setTrack(track);
+				history.setDevice(device);
+				history.setCountsend(1);
+				historyService.save(history);
+			}
+				log.info("Save history, rating and update ratios");
+			//}
 			return new ResponseEntity(HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);

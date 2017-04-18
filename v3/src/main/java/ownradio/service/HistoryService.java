@@ -2,6 +2,8 @@ package ownradio.service;
 
 import ownradio.domain.History;
 
+import java.util.UUID;
+
 /**
  * Интерфейс сервиса, для работы с историей прослушанных треков
  *
@@ -9,4 +11,5 @@ import ownradio.domain.History;
  */
 public interface HistoryService {
 	void save(History history);
+	History getById(UUID uuid);
 }

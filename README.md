@@ -97,7 +97,7 @@ Web API v4
 ### Регистрация нового устройства
 ##### GET /v4/devices/{deviceId}/{deviceName}/registerdevice
 * `{deviceId}` - UUID устройства
-* `{deviceName}` - название устройства (может отсутсвтваовать)
+* `{deviceName}` - название устройства (может отсутствовать)
 ##### HttpStatus
 * `200, "OK"` – если все ок
 * `400, "Bad Request"` - Если пользователь ввел некорректные данные

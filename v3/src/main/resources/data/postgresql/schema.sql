@@ -252,9 +252,8 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION calculateratios()
 	RETURNS boolean AS
 '
--- Функция рассчитывает таблицу коэффициентов схожести интересов для пар пользователей
 DECLARE
-	-- объявляем курсор и запрос для него
+-- объявляем курсор и запрос для него
 		curs1 CURSOR FOR SELECT * FROM(
 				-- рассчитываем матрицу коэффициентов схожести интересов для каждой пары пользователей
 				SELECT r.userid as userid01, r2.userid as userid02, SUM(r.ratingsum * r2.ratingsum) as s
@@ -331,27 +330,25 @@ BEGIN
 
 		IF NOT FOUND THEN EXIT; -- если данных нет - выходим
 		END IF;
-		-- если для данной пары пользователей уже записан коэффициент - пропускаем, иначе - записываем во временную таблицу
-		IF NOT EXISTS (SELECT * FROM temp_ratio WHERE userid1 = cuser2 AND userid2 = cuser1 OR userid1 = cuser1 AND userid2 = cuser2) THEN
-			INSERT INTO temp_ratio(userid1, userid2, ratio)
+
+		INSERT INTO temp_ratio(userid1, userid2, ratio)
 			VALUES (cuser1, cuser2, cratio);
-		END IF;
+
 	END LOOP;
 	CLOSE curs1; -- закрываем курсор
 
-	-- обновляем имеющиеся коэффициенты в таблице ratios
 	UPDATE ratios SET ratio = temp_ratio.ratio, recupdated = now() FROM temp_ratio
-	WHERE (ratios.userid1 = temp_ratio.userid1 AND ratios.userid2 = temp_ratio.userid2)
-		  OR (ratios.userid1 = temp_ratio.userid2 AND ratios.userid2 = temp_ratio.userid1);
+		WHERE ratios.userid1 = temp_ratio.userid1 AND ratios.userid2 = temp_ratio.userid2;
 
-	-- если в ratios меньше пар пользователей, чем во временной таблице - вставляем недостающие записи
-	IF (SELECT COUNT(*) FROM ratios WHERE userid1 = i_userid or userid2 = i_userid) < (SELECT COUNT(*) FROM temp_ratio) THEN
-		INSERT INTO ratios (userid1, userid2, ratio, reccreated)
-			(SELECT tr.userid1, tr.userid2, tr.ratio, now() FROM temp_ratio AS tr
-				LEFT OUTER JOIN ratios AS rr ON tr.userid1 = rr.userid1 AND tr.userid2 = rr.userid2 OR tr.userid1 = rr.userid2 AND tr.userid2 = rr.userid1
-			WHERE rr.userid1 IS NULL OR rr.userid2 IS NULL
-			);
-	END IF;
+
+	INSERT INTO ratios (userid1, userid2, ratio, reccreated)
+		(SELECT temp_ratio.userid1,temp_ratio.userid2, temp_ratio.ratio, now()
+			FROM temp_ratio
+			LEFT OUTER JOIN ratios ON
+				temp_ratio.userid1 = ratios.userid1 AND temp_ratio.userid2 = ratios.userid2
+			WHERE ratios.userid1 IS NULL OR ratios.userid2 IS NULL
+		);
+
 RETURN TRUE;
 END;
 '
@@ -578,7 +575,7 @@ BEGIN
 	IF i_count < 0 THEN
 		i_count = null;
 	END IF;
-RETURN QUERY SELECT CAST((res1.recid) AS CHARACTER VARYING), CAST((res1.reccreated) AS CHARACTER VARYING), res1.recname, CAST((res1.recupdated) AS CHARACTER VARYING), res1.owntracks, COUNT(res2.userid) AS lasttracks
+RETURN QUERY SELECT CAST((res1.recid) AS CHARACTER VARYING), CAST((res1.reccreated) AS CHARACTER VARYING), res1.recname, CAST((res1.recupdated) AS CHARACTER VARYING), res1.owntracks, COUNT(res2.userid) AS downloadtracks
 FROM
 	(SELECT u.recid, u.reccreated, u.recname, u.recupdated, COUNT(r.recid) AS owntracks
 		FROM users u
@@ -589,7 +586,7 @@ FROM
 				ON dev.recid= d.deviceid AND d.reccreated > localtimestamp - INTERVAL ''1 day'') res2
 		ON res2.userid = res1.recid
 	GROUP BY res1.recid, res1.reccreated, res1.recname, res1.recupdated, res1.owntracks
-	ORDER BY lasttracks DESC, owntracks DESC
+	ORDER BY downloadtracks DESC, owntracks DESC
 	LIMIT i_count;
 
 END;
@@ -924,6 +921,7 @@ LANGUAGE plpgsql;
 
 
 
+DROP FUNCTION getnexttrack_v2(uuid);
 
 CREATE OR REPLACE FUNCTION getnexttrack_v2(IN i_deviceid uuid)
 	RETURNS TABLE(track character varying, method integer, useridrecommended character varying, txtrecommendedinfo character varying, timeexecute character varying) AS

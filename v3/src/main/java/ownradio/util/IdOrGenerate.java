@@ -12,7 +12,6 @@ import java.util.UUID;
  */
 
 	public class IdOrGenerate extends UUIDGenerator {
-		//private static final Logger log = Logger.getLogger(UseIdOrGenerate.class.getName());
 
 		@Override
 		public UUID generate(SessionImplementor session, Object obj) throws HibernateException {

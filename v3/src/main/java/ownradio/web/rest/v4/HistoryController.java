@@ -98,7 +98,7 @@ public class HistoryController {
 				if(historyTemp != null){
 					historyTemp.setCountsend(((historyTemp.getCountsend()==null?0:historyTemp.getCountsend())) + 1);
 //					historyTemp.setComment(historyTemp.getComment() + (new Date()).toString() + "; ");
-					historyService.save(historyTemp);
+					historyService.save(historyTemp, false);
 					return new ResponseEntity(HttpStatus.ALREADY_REPORTED);
 				} else {
 					historyTemp = new History();
@@ -108,13 +108,13 @@ public class HistoryController {
 					historyTemp.setCountsend(1);
 					historyTemp.setIsListen(history.getIsListen());
 					historyTemp.setLastListen(history.getLastListen());
-					historyService.save(historyTemp);
+					historyService.save(historyTemp, true);
 				}
 			} else {
 				history.setTrack(track);
 				history.setDevice(device);
 				history.setCountsend(1);
-				historyService.save(history);
+				historyService.save(history, true);
 			}
 				log.info("Save history, rating and update ratios");
 			//}

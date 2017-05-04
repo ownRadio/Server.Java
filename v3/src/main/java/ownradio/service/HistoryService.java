@@ -10,6 +10,6 @@ import java.util.UUID;
  * @author Alpenov Tanat
  */
 public interface HistoryService {
-	void save(History history);
+	void save(History history, Boolean isNewHistoryRec);
 	History getById(UUID uuid);
 }

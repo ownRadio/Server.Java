@@ -16,4 +16,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
 	@Query(value = "select * from getusersrating(?1)", nativeQuery = true)
 	List<Object[]> getUsersRating(Integer countRows);
+
+	@Query(value = "select * from getlastusers(?1)", nativeQuery = true)
+	List<Object[]> getLastUsers(Integer countRows);
 }

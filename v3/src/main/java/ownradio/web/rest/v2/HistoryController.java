@@ -58,7 +58,7 @@ public class HistoryController {
 			history.setTrack(track);
 			history.setDevice(device);
 
-			historyService.save(history);
+			historyService.save(history, true);
 
 			return new ResponseEntity(history, HttpStatus.OK);
 		} catch (Exception e) {

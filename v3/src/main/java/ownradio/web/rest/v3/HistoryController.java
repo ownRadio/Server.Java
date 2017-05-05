@@ -93,7 +93,7 @@ public class HistoryController {
 			history.setTrack(track);
 			history.setDevice(device);
 
-			historyService.save(history);
+			historyService.save(history, true);
 			log.info("Save history, rating and update ratios");
 			return new ResponseEntity(HttpStatus.OK);
 		} catch (Exception e) {

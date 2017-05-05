@@ -95,5 +95,15 @@ public class StatisticsController {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
+
+	@RequestMapping(value = "/getlastusers/{countUsers}", method = RequestMethod.GET)
+	public ResponseEntity<?> getLastUsers(@PathVariable Integer countUsers) {
+		try{
+			List<UsersRating> lastActiveDevices = userService.getLastUsers(countUsers);
+			return new ResponseEntity<>(lastActiveDevices, HttpStatus.OK);
+		}catch (Exception ex){
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
 }
 

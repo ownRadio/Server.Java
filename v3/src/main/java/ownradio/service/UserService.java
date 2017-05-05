@@ -18,4 +18,5 @@ public interface UserService {
 
 	List<UsersRating> getUsersRating(Integer countRows);
 
+	List<UsersRating> getLastUsers(Integer countRows);
 }

@@ -3,6 +3,7 @@ package ownradio.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ownradio.domain.Device;
 import ownradio.domain.User;
 import ownradio.domain.UsersRating;
 import ownradio.repository.UserRepository;
@@ -41,7 +42,7 @@ public class UserServiceImpl implements UserService {
 				userRating.setRecname((String) objects.get(i)[2]);
 				userRating.setRecupdated((String) objects.get(i)[3]);
 				userRating.setOwntracks((BigInteger) objects.get(i)[4]);
-				userRating.setLasttracks((BigInteger) objects.get(i)[5]);
+				userRating.setDownloadtracks((BigInteger) objects.get(i)[5]);
 
 				usersRating.add(userRating);
 			}
@@ -49,5 +50,28 @@ public class UserServiceImpl implements UserService {
 			return null;
 		}
 		return usersRating;
+	}
+
+
+	@Override
+	public List<UsersRating> getLastUsers(Integer countRows){
+		List<UsersRating> lastUsers = new ArrayList<UsersRating>();
+		List<Object[]> objects = userRepository.getLastUsers(countRows);
+		if (objects != null) {
+			for (int i = 0; i < objects.size(); i++) {
+				UsersRating lastUser = new UsersRating();
+				lastUser.setUserid(UUID.fromString((String) objects.get(i)[0]));
+				lastUser.setReccreated((String) objects.get(i)[1]);
+				lastUser.setLastactive((String) objects.get(i)[2]);
+				lastUser.setRecname((String) objects.get(i)[3]);
+				lastUser.setRecupdated((String) objects.get(i)[4]);
+				lastUser.setOwntracks((BigInteger) objects.get(i)[5]);
+				lastUser.setDownloadtracks((BigInteger) objects.get(i)[6]);
+				lastUsers.add(lastUser);
+			}
+		} else {
+			return null;
+		}
+		return lastUsers;
 	}
 }

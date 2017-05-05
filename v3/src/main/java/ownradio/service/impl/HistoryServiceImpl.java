@@ -10,6 +10,8 @@ import ownradio.repository.RatingRepository;
 import ownradio.repository.RatioRepository;
 import ownradio.service.HistoryService;
 
+import java.util.UUID;
+
 @Service
 public class HistoryServiceImpl implements HistoryService {
 
@@ -24,31 +26,37 @@ public class HistoryServiceImpl implements HistoryService {
 		this.ratioRepository = ratioRepository;
 	}
 
+	@Override
+	public History getById(UUID uuid) {
+		return historyRepository.findOne(uuid);
+	}
+
 	@Transactional
 	@Override
-	public void save(History history) {
+	public void save(History history, Boolean isNewHistoryRec) {
 		historyRepository.saveAndFlush(history);
 
-		Rating rating = ratingRepository.findByUserAndTrack(history.getDevice().getUser(), history.getTrack());
-		if(rating != null) {
-			int ratingsum = rating.getRatingsum() + history.getIsListen();
-			rating.setLastlisten(history.getLastListen());
-			rating.setRatingsum(ratingsum);
-			ratingRepository.saveAndFlush(rating);
-		}
-		else {
-			rating = new Rating();
-			rating.setUser(history.getDevice().getUser());
-			rating.setTrack(history.getTrack());
-			rating.setLastlisten(history.getLastListen());
-			rating.setRatingsum(history.getIsListen());
-			ratingRepository.saveAndFlush(rating);
-		}
+		if(isNewHistoryRec) {
+			Rating rating = ratingRepository.findByUserAndTrack(history.getDevice().getUser(), history.getTrack());
+			if (rating != null) {
+				int ratingsum = rating.getRatingsum() + history.getIsListen();
+				rating.setLastlisten(history.getLastListen());
+				rating.setRatingsum(ratingsum);
+				ratingRepository.saveAndFlush(rating);
+			} else {
+				rating = new Rating();
+				rating.setUser(history.getDevice().getUser());
+				rating.setTrack(history.getTrack());
+				rating.setLastlisten(history.getLastListen());
+				rating.setRatingsum(history.getIsListen());
+				ratingRepository.saveAndFlush(rating);
+			}
 
-		try {
-			ratioRepository.updateRatios(history.getDevice().getRecid());
-		}catch (Exception ex){
-			ex.printStackTrace();
+			try {
+				ratioRepository.updateRatios(history.getDevice().getRecid());
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 		}
 	}
 }

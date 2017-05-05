@@ -50,6 +50,7 @@ public class TrackServiceImpl implements TrackService {
 			nextTrack.setMethodid((Integer) objects.get(0)[1]);
 			if(objects.get(0)[2] != null) nextTrack.setUseridrecommended(UUID.fromString((String) objects.get(0)[2]));
 			if(objects.get(0)[3] != null) nextTrack.setTxtrecommendedinfo((String) objects.get(0)[3]);
+			if(objects.get(0)[4] != null) nextTrack.setTimeexecute((String) objects.get(0)[4]);
 			return nextTrack;
 		}else{
 			return null;

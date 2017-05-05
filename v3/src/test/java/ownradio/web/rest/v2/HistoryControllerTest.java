@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -94,7 +95,7 @@ public class HistoryControllerTest {
 		given(this.trackService.getById(TRACK_UUID)).willReturn(track);
 		given(this.deviceService.getById(DEVICE_UUID)).willReturn(device);
 
-		doThrow(RuntimeException.class).when(this.historyService).save(any(History.class));
+		doThrow(RuntimeException.class).when(this.historyService).save(any(History.class), anyBoolean());
 
 		JSONObject obj = new JSONObject();
 		obj.put("lastListen", "2016-11-28T12:34:56");

@@ -44,4 +44,8 @@ public class History extends AbstractEntity {
 	@ManyToOne
 	@JoinColumn(name = "deviceid")
 	private Device device;
+
+	private Integer countsend;
+
+	private String comment;
 }

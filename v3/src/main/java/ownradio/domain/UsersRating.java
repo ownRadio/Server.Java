@@ -25,7 +25,11 @@ public class UsersRating{
 //	@Temporal(TemporalType.TIMESTAMP)
 	private String recupdated;
 
+	@DateTimeFormat(pattern = "dd-MM-yyyy'T'H:m:s")
+	//@Temporal(TemporalType.TIMESTAMP)
+	private String lastactive;
+
 	private BigInteger owntracks;
 
-	private BigInteger lasttracks;
+	private BigInteger downloadtracks;
 }

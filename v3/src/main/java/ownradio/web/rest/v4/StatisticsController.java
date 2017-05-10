@@ -5,10 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ownradio.domain.Device;
-import ownradio.domain.DownloadTrack;
-import ownradio.domain.TracksHistory;
-import ownradio.domain.UsersRating;
+import ownradio.domain.*;
 import ownradio.repository.DeviceRepository;
 import ownradio.service.DeviceService;
 import ownradio.service.DownloadTrackService;
@@ -81,6 +78,16 @@ public class StatisticsController {
 		try {
 			List<TracksHistory> tracksHistories = downloadTrackService.getTracksHistoryByDevice(deviceId, countTracks);
 			return new ResponseEntity<>(tracksHistories, HttpStatus.OK);
+		}catch (Exception ex){
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
+	@RequestMapping(value = "/{deviceId}/{countTracks}/gettracksratingbydevice", method = RequestMethod.GET)
+	public ResponseEntity<?> getTracksRatingByDevice(@PathVariable UUID deviceId, @PathVariable Integer countTracks) {
+		try {
+			List<TracksRating> tracksRatings = downloadTrackService.getTracksRatingByDevice(deviceId, countTracks);
+			return new ResponseEntity<>(tracksRatings, HttpStatus.OK);
 		}catch (Exception ex){
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}

@@ -24,4 +24,7 @@ public interface DownloadTrackRepository extends JpaRepository<DownloadTrack, UU
 	@Query(value = "select * from getTracksHistoryByDevice(?1, ?2)", nativeQuery = true)
 	List<Object[]> getTracksHistoryByDevice(UUID deviceId, Integer countRows);
 
+	@Query(value = "select * from getTracksRatingByDevice(?1, ?2)", nativeQuery = true)
+	List<Object[]> getTracksHistoryWithRatingByDevice(UUID deviceId, Integer countRows);
+
 }

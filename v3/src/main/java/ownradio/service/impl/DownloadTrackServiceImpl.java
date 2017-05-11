@@ -63,7 +63,7 @@ public class DownloadTrackServiceImpl implements DownloadTrackService {
 	@Transactional
 	public List<TracksRating> getTracksRatingByDevice(UUID deviceId, Integer countRows){
 		List<TracksRating> tracksRatings = new ArrayList<TracksRating>();
-		List<Object[]> objects = downloadTrackRepository.getTracksHistoryByDevice(deviceId, countRows);
+		List<Object[]> objects = downloadTrackRepository.getTracksHistoryWithRatingByDevice(deviceId, countRows);
 		if (objects != null) {
 			for (int i = 0; i < objects.size(); i++) {
 				TracksRating tracksRating = new TracksRating();

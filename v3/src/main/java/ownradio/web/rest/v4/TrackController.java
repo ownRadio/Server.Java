@@ -9,17 +9,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ownradio.domain.Device;
+import ownradio.domain.Log;
 import ownradio.domain.NextTrack;
 import ownradio.domain.Track;
 import ownradio.repository.DownloadTrackRepository;
 import ownradio.repository.TrackRepository;
+import ownradio.service.LogService;
 import ownradio.service.TrackService;
 import ownradio.util.ResourceUtil;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by a.polunina on 14.03.2017.
@@ -33,12 +34,14 @@ public class TrackController {
 	private final TrackService trackService;
 	private final TrackRepository trackRepository;
 	private final DownloadTrackRepository downloadTrackRepository;
+	private final LogService logService;
 
 	@Autowired
-	public TrackController(TrackService trackService, TrackRepository trackRepository, DownloadTrackRepository downloadTrackRepository) {
+	public TrackController(TrackService trackService, TrackRepository trackRepository, DownloadTrackRepository downloadTrackRepository, LogService logService) {
 		this.trackService = trackService;
 		this.trackRepository = trackRepository;
 		this.downloadTrackRepository = downloadTrackRepository;
+		this.logService = logService;
 	}
 
 	@Data
@@ -65,6 +68,12 @@ public class TrackController {
 
 	@RequestMapping(method = RequestMethod.POST)
 	public ResponseEntity save(TrackDTO trackDTO) {
+		Log logRec = new Log();
+		logRec.setRecname("Upload");
+		logRec.setDeviceid(trackDTO.getDeviceId());
+		logRec.setLogtext("/v4/tracks; Body: TrackidId=" + trackDTO.getFileGuid() +", fileName=" + trackDTO.getFileName() + ", filePath=" + trackDTO.getFilePath() + ", deviceid=" + trackDTO.getDeviceId() + ", musicFile=" + trackDTO.getMusicFile().getOriginalFilename());
+		logService.save(logRec);
+
 		if (trackDTO.getMusicFile().isEmpty()) {
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		}
@@ -81,6 +90,10 @@ public class TrackController {
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	public ResponseEntity<?> getTrack(@PathVariable UUID id) {
+		Log logRec = new Log();
+		logRec.setRecname("GetTrackdById");
+		logRec.setLogtext("/v4/tracks/" + id);
+		logService.save(logRec);
 		Track track = trackService.getById(id);
 
 		if (track != null) {
@@ -99,6 +112,12 @@ public class TrackController {
 
 	@RequestMapping(value = "/{deviceId}/next", method = RequestMethod.GET)
 	public ResponseEntity<?> getNextTrack(@PathVariable UUID deviceId) {
+		Log logRec = new Log();
+		logRec.setDeviceid(deviceId);
+		logRec.setRecname("Next");
+		logRec.setLogtext("/v4/tracks/" + deviceId + "/next");
+		logService.save(logRec);
+
 		NextTrack nextTrack = null;
 		try {
 			nextTrack = trackService.getNextTrackIdV2(deviceId);

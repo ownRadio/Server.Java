@@ -8,15 +8,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ownradio.domain.Device;
 import ownradio.domain.History;
+import ownradio.domain.Log;
 import ownradio.domain.Track;
-import ownradio.repository.DeviceRepository;
-import ownradio.repository.TrackRepository;
 import ownradio.service.DeviceService;
 import ownradio.service.HistoryService;
+import ownradio.service.LogService;
 import ownradio.service.TrackService;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.UUID;
 
 /**
@@ -29,12 +31,14 @@ public class HistoryController {
 	private final HistoryService historyService;
 	private final TrackService trackService;
 	private final DeviceService deviceService;
+	private final LogService logService;
 
 	@Autowired
-	public HistoryController(HistoryService historyService, TrackService trackService, DeviceService deviceService) {
+	public HistoryController(HistoryService historyService, TrackService trackService, DeviceService deviceService, LogService logService) {
 		this.historyService = historyService;
 		this.trackService = trackService;
 		this.deviceService = deviceService;
+		this.logService = logService;
 	}
 
 	@Data
@@ -78,6 +82,15 @@ public class HistoryController {
 
 	private ResponseEntity getResponseEntity(@PathVariable UUID deviceId, @PathVariable UUID trackId, @RequestBody History history) {
 		try {
+			Log logRec = new Log();
+			logRec.setDeviceid(deviceId);
+			logRec.setRecname("History");
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));//Time format UTC+0
+			String currentDateTime = dateFormat.format(new Date(history.getLastListen().getTimeInMillis()));
+			logRec.setLogtext("/v3/histories/" + deviceId + "/" + trackId + ". Body: isListen=" + history.getIsListen() + ", lastListen=" + currentDateTime);
+			logService.save(logRec);
+
 			if(deviceService.getById(deviceId) == null || trackService.getById(trackId) == null)
 				return new ResponseEntity(HttpStatus.OK);
 

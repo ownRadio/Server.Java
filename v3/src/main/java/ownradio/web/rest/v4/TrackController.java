@@ -163,11 +163,11 @@ public class TrackController {
 				if(track.getRecname() != null && !track.getRecname().isEmpty() && !track.getRecname().equals("null"))
 					trackInfo.put("name", track.getRecname());
 				else
-					trackInfo.put("name", "Unknown track");
+					trackInfo.put("name", "Track");
 				if(track.getArtist() != null && !track.getArtist().isEmpty() && !track.getArtist().equals("null"))
 					trackInfo.put("artist", track.getArtist());
 				else
-					trackInfo.put("artist", "Unknown artist");
+					trackInfo.put("artist", "Artist");
 				trackInfo.put("pathupload", track.getLocaldevicepathupload());
 
 				trackInfo.put("timeexecute", nextTrack.getTimeexecute());

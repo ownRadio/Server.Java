@@ -36,11 +36,9 @@ public class LogController {
 
 	@RequestMapping(value = "/{deviceId}", method = RequestMethod.POST)
 	public ResponseEntity save(@PathVariable UUID deviceId, MultipartFile logFile) {
-		if (logFile.isEmpty() || deviceId == null) {
+		if (logFile == null || logFile.isEmpty() || deviceId == null) {
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		}
-
-		int fileNo = 0;
 
 		try {
 			String dirName = "LogFiles/" + deviceId.toString();

@@ -30,7 +30,7 @@ public class DownloadTrack extends AbstractEntity {
 
 	private Integer methodid;
 
-	private UUID userrecommend;
+	private UUID userrecommendid;
 
 	private String txtrecommendinfo;
 

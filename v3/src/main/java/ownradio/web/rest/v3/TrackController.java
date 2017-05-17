@@ -129,8 +129,8 @@ public class TrackController {
 //				downloadTrack.setTrack(track);
 //				downloadTrack.setDevice(device);
 //				downloadTrack.setMethodid(nextTrack.getMethodid());
-//				downloadTrack.setUserrecommend(nextTrack.getUseridrecommended());
-//				downloadTrack.setTxtrecommendinfo(nextTrack.getTxtrecommendedinfo());
+//				downloadTrack.setUserrecommendid(nextTrack.getUseridrecommended());
+//				downloadTrack.setTxtrecommendinfo(nextTrack.getTxtrecommendinfo());
 //				downloadTrackRepository.saveAndFlush(downloadTrack);
 
 				File file = new File(track.getPath());

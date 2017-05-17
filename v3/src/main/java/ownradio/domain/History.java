@@ -36,11 +36,6 @@ public class History extends AbstractEntity {
 	@Column(name = "islisten", nullable = false)
 	private int isListen; // 1, -1
 
-//	@Column(nullable = false)
-	private String method;
-
-	private Integer methodid;
-
 	@ManyToOne
 	@JoinColumn(name = "deviceid")
 	private Device device;

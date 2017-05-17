@@ -47,7 +47,6 @@ public class HistoryController {
 		private UUID trackId;
 		private String lastListen;
 		private int isListen; // 1, -1
-		private Integer methodid;
 
 		public History getHistory() {
 			Calendar calendar;
@@ -62,7 +61,6 @@ public class HistoryController {
 			History history = new History();
 			history.setLastListen(calendar);
 			history.setIsListen(isListen);
-			history.setMethodid(methodid);
 
 			return history;
 		}
@@ -95,7 +93,7 @@ public class HistoryController {
 				return new ResponseEntity(HttpStatus.OK);
 
 			log.info("deviceId:{} trackId: {}",deviceId.toString(),trackId.toString());
-			log.info("{} {} {}",history.getLastListen(), history.getIsListen(), history.getMethodid());
+			log.info("{} {} {}",history.getLastListen(), history.getIsListen());
 			Track track = trackService.getById(trackId);
 			Device device = deviceService.getById(deviceId);
 

@@ -90,9 +90,20 @@ public class TrackController {
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	public ResponseEntity<?> getTrack(@PathVariable UUID id) {
+		return getResponseEntity(id, null);
+	}
+
+
+	@RequestMapping(value = "/{id}/{deviceId}", method = RequestMethod.GET)
+	public ResponseEntity<?> getTrackWithDeviceId(@PathVariable UUID id, @PathVariable UUID deviceId) {
+		return getResponseEntity(id, deviceId);
+	}
+
+	private ResponseEntity getResponseEntity(@PathVariable UUID id, @PathVariable UUID deviceId){
 		Log logRec = new Log();
 		logRec.setRecname("GetTrackdById");
-		logRec.setLogtext("/v4/tracks/" + id);
+		logRec.setDeviceid(deviceId);
+		logRec.setLogtext("/v4/tracks/" + id + "/" + deviceId);
 		logService.save(logRec);
 		Track track = trackService.getById(id);
 

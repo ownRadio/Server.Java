@@ -79,8 +79,8 @@ public class HistoryController {
 	}
 
 	private ResponseEntity getResponseEntity(@PathVariable UUID deviceId, @PathVariable UUID trackId, @RequestBody History history) {
+		Log logRec = new Log();
 		try {
-			Log logRec = new Log();
 			logRec.setDeviceid(deviceId);
 			logRec.setRecname("History");
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -89,8 +89,11 @@ public class HistoryController {
 			logRec.setLogtext("/v3/histories/" + deviceId + "/" + trackId + ". Body: isListen=" + history.getIsListen() + ", lastListen=" + currentDateTime);
 			logService.save(logRec);
 
-			if(deviceService.getById(deviceId) == null || trackService.getById(trackId) == null)
+			if (deviceService.getById(deviceId) == null || trackService.getById(trackId) == null) {
+				logRec.setResponse("HttpStatus=" + HttpStatus.OK + "; deviceId=" + deviceId + " or trackId " + trackId + " not found");
+				logService.save(logRec);
 				return new ResponseEntity(HttpStatus.OK);
+			}
 
 			log.info("deviceId:{} trackId: {}",deviceId.toString(),trackId.toString());
 			log.info("{} {} {}",history.getLastListen(), history.getIsListen());
@@ -106,8 +109,12 @@ public class HistoryController {
 
 			historyService.save(history, true);
 			log.info("Save history, rating and update ratios");
+			logRec.setResponse("HttpStatus=" + HttpStatus.OK + "; Save history, rating and update ratios");
+			logService.save(logRec);
 			return new ResponseEntity(HttpStatus.OK);
 		} catch (Exception e) {
+			logRec.setResponse("HttpStatus=" + HttpStatus.INTERNAL_SERVER_ERROR + "; Error:" + e.getMessage());
+			logService.save(logRec);
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}

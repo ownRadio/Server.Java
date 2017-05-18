@@ -23,4 +23,6 @@ public class Log extends AbstractEntity {
 	@Column(columnDefinition="TEXT")
 	private String logtext;
 	private UUID deviceid;
+	@Column(columnDefinition="TEXT")
+	private String response;
 }

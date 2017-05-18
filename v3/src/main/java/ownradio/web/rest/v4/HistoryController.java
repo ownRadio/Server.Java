@@ -80,8 +80,8 @@ public class HistoryController {
 	}
 
 	private ResponseEntity getResponseEntity(@PathVariable UUID deviceId, @PathVariable UUID trackId, @RequestBody History history) {
+		Log logRec = new Log();
 		try {
-			Log logRec = new Log();
 			logRec.setDeviceid(deviceId);
 			logRec.setRecname("History");
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -90,8 +90,11 @@ public class HistoryController {
 			logRec.setLogtext("/v4/histories/" + deviceId + "/" + trackId + ". Body: History recid=" + history.getRecid() + ", isListen=" + history.getIsListen() + ", lastListen=" + currentDateTime);
 			logService.save(logRec);
 
-			if(deviceService.getById(deviceId) == null || trackService.getById(trackId) == null)
+			if(deviceService.getById(deviceId) == null || trackService.getById(trackId) == null) {
+				logRec.setResponse("HttpStatus=" + HttpStatus.NOT_FOUND + "; deviceId=" + deviceId + " or trackId " + trackId + " not found");
+				logService.save(logRec);
 				return new ResponseEntity(HttpStatus.NOT_FOUND);
+			}
 
 			log.info("deviceId:{} trackId: {}",deviceId.toString(),trackId.toString());
 			log.info("{} {} {} {}",history.getRecid(), history.getLastListen(), history.getIsListen());
@@ -112,6 +115,8 @@ public class HistoryController {
 					historyTemp.setCountsend(((historyTemp.getCountsend()==null?0:historyTemp.getCountsend())) + 1);
 //					historyTemp.setComment(historyTemp.getComment() + (new Date()).toString() + "; ");
 					historyService.save(historyTemp, false);
+					logRec.setResponse("HttpStatus=" + HttpStatus.ALREADY_REPORTED + "; historyId=" + historyTemp.getRecid());
+					logService.save(logRec);
 					return new ResponseEntity(HttpStatus.ALREADY_REPORTED);
 				} else {
 					historyTemp = new History();
@@ -130,9 +135,13 @@ public class HistoryController {
 				historyService.save(history, true);
 			}
 				log.info("Save history, rating and update ratios");
+			logRec.setResponse("HttpStatus=" + HttpStatus.OK + "; Save history, rating and update ratios");
+			logService.save(logRec);
 			//}
 			return new ResponseEntity(HttpStatus.OK);
 		} catch (Exception e) {
+			logRec.setResponse("HttpStatus=" + HttpStatus.INTERNAL_SERVER_ERROR + "; Error:" + e.getMessage());
+			logService.save(logRec);
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}

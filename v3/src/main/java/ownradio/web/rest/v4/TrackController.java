@@ -75,14 +75,20 @@ public class TrackController {
 		logService.save(logRec);
 
 		if (trackDTO.getMusicFile().isEmpty()) {
+			logRec.setResponse("Http.Status=" + HttpStatus.BAD_REQUEST + "; File is absent");
+			logService.save(logRec);
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		}
 
 		try {
 			trackService.save(trackDTO.getTrack(), trackDTO.getMusicFile());
 			trackService.setTrackInfo(trackDTO.getTrack().getRecid());
+			logRec.setResponse("Http.Status=" + HttpStatus.CREATED);
+			logService.save(logRec);
 			return new ResponseEntity(HttpStatus.CREATED);
 		} catch (Exception e) {
+			logRec.setResponse("Http.Status=" + HttpStatus.INTERNAL_SERVER_ERROR + "; Error=" + e.getMessage());
+			logService.save(logRec);
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
@@ -109,8 +115,12 @@ public class TrackController {
 
 		if (track != null) {
 			byte[] bytes = ResourceUtil.read(track.getPath());
+			logRec.setResponse("Http.Status=" + HttpStatus.OK + "; trackId=" + id.toString());
+			logService.save(logRec);
 			return new ResponseEntity<>(bytes, getHttpAudioHeaders(), HttpStatus.OK);
 		} else {
+			logRec.setResponse("Http.Status=" + HttpStatus.NOT_FOUND + "; trackId=" + id.toString());
+			logService.save(logRec);
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
@@ -134,6 +144,8 @@ public class TrackController {
 			nextTrack = trackService.getNextTrackIdV2(deviceId);
 		}catch (Exception ex){
 			log.info("{}", ex.getMessage());
+			logRec.setResponse("HttpStatus=" + HttpStatus.NOT_FOUND +"; Error:" + ex.getMessage());
+			logService.save(logRec);
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 
@@ -174,12 +186,19 @@ public class TrackController {
 
 
 				log.info("getNextTrack return {} {}", nextTrack.getMethodid(), trackInfo.get("id"));
+
+				logRec.setResponse("HttpStatus=" + HttpStatus.OK +"; trackId=" + trackInfo.get("id"));
+				logService.save(logRec);
 				return new ResponseEntity<>(trackInfo, HttpStatus.OK);
 			}catch (Exception ex){
 				log.info("{}", ex.getMessage());
+				logRec.setResponse("HttpStatus=" + HttpStatus.NOT_FOUND +"; Error:" + ex.getMessage());
+				logService.save(logRec);
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
 		} else {
+			logRec.setResponse("HttpStatus=" + HttpStatus.NOT_FOUND +"; Error: Track is not found");
+			logService.save(logRec);
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}

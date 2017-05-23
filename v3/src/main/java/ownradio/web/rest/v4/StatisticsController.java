@@ -3,10 +3,11 @@ package ownradio.web.rest.v4;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ownradio.domain.*;
-import ownradio.repository.DeviceRepository;
+import ownradio.service.DeviceService;
 import ownradio.service.DeviceService;
 import ownradio.service.DownloadTrackService;
 import ownradio.service.UserService;
@@ -112,5 +113,15 @@ public class StatisticsController {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
+//
+//	@RequestMapping(value = "/getlastusers/{countUsers}/{xml}", method = RequestMethod.GET, produces = { "application/xml", "text/xml" })
+//	public ResponseEntity<?> getLastUsersXML(@PathVariable Integer countUsers) {
+//		try{
+//			List<UsersRating> lastActiveDevices = userService.getLastUsers(countUsers);
+//			return new ResponseEntity<>(lastActiveDevices, HttpStatus.OK);
+//		}catch (Exception ex){
+//			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//		}
+//	}
 }
 

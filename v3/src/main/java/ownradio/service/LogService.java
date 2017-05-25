@@ -2,6 +2,9 @@ package ownradio.service;
 
 import ownradio.domain.Log;
 
+import java.util.List;
+import java.util.UUID;
+
 /**
  * Интерфейс сервиса, для работы с логгированием
  *
@@ -9,4 +12,6 @@ import ownradio.domain.Log;
  */
 public interface LogService {
 	Log save(Log log);
+
+	List<Log> getByDeviceId(UUID deviceId);
 }

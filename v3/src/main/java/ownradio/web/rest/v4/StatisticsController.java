@@ -3,13 +3,12 @@ package ownradio.web.rest.v4;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ownradio.domain.*;
 import ownradio.service.DeviceService;
-import ownradio.service.DeviceService;
 import ownradio.service.DownloadTrackService;
+import ownradio.service.LogService;
 import ownradio.service.UserService;
 
 import java.util.List;
@@ -27,13 +26,14 @@ public class StatisticsController {
 	private final UserService userService;
 	private final DeviceService deviceService;
 	private final DownloadTrackService downloadTrackService;
+	private final LogService logService;
 
 	@Autowired
-	public StatisticsController(UserService userService, DeviceService deviceService, DownloadTrackService downloadTrackService){
+	public StatisticsController(UserService userService, DeviceService deviceService, DownloadTrackService downloadTrackService, LogService logService){
 		this.userService = userService;
 		this.deviceService = deviceService;
 		this.downloadTrackService = downloadTrackService;
-
+		this.logService = logService;
 	}
 
 	@RequestMapping(value = "/{userId}/getuserdevices", method = RequestMethod.GET)
@@ -84,6 +84,7 @@ public class StatisticsController {
 		}
 	}
 
+	//возвращает историю выдачи и рейтинг прослушивания треков для данного устройства
 	@RequestMapping(value = "/{deviceId}/{countTracks}/gettracksratingbydevice", method = RequestMethod.GET)
 	public ResponseEntity<?> getTracksRatingByDevice(@PathVariable UUID deviceId, @PathVariable Integer countTracks) {
 		try {
@@ -104,6 +105,8 @@ public class StatisticsController {
 		}
 	}
 
+	//возвращает пользователей, количество дослушанных ими треков, количество скачанных треков
+	//отсортированных по убыванию активности (по последнему запросу трека)
 	@RequestMapping(value = "/getlastusers/{countUsers}", method = RequestMethod.GET)
 	public ResponseEntity<?> getLastUsers(@PathVariable Integer countUsers) {
 		try{
@@ -113,15 +116,17 @@ public class StatisticsController {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
-//
-//	@RequestMapping(value = "/getlastusers/{countUsers}/{xml}", method = RequestMethod.GET, produces = { "application/xml", "text/xml" })
-//	public ResponseEntity<?> getLastUsersXML(@PathVariable Integer countUsers) {
-//		try{
-//			List<UsersRating> lastActiveDevices = userService.getLastUsers(countUsers);
-//			return new ResponseEntity<>(lastActiveDevices, HttpStatus.OK);
-//		}catch (Exception ex){
-//			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//		}
-//	}
+
+	//возвращает логи по deviceId
+	@RequestMapping(value = "/getlogbydeviceid/{deviceId}", method = RequestMethod.GET)
+	public ResponseEntity<?> getLogsByDeviceId(@PathVariable UUID deviceId) {
+		try{
+			List<Log> logList = logService.getByDeviceId(deviceId);
+			return new ResponseEntity<>(logList, HttpStatus.OK);
+		}catch (Exception ex){
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
 }
 

@@ -86,16 +86,16 @@ public class HistoryController {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));//Time format UTC+0
 			String currentDateTime = dateFormat.format(new Date(history.getLastListen().getTimeInMillis()));
-			logRec.setLogtext("/v3/histories/" + deviceId + "/" + trackId + ". Body: isListen=" + history.getIsListen() + ", lastListen=" + currentDateTime);
+			logRec.setLogtext("/v3/histories/" + deviceId + "/" + trackId + ". Body: islisten=" + history.getIsListen() + ", lastlisten=" + currentDateTime);
 			logService.save(logRec);
 
 			if (deviceService.getById(deviceId) == null || trackService.getById(trackId) == null) {
-				logRec.setResponse("HttpStatus=" + HttpStatus.OK + "; deviceId=" + deviceId + " or trackId " + trackId + " not found");
+				logRec.setResponse("HttpStatus=" + HttpStatus.OK + "; deviceid=" + deviceId + " or trackid " + trackId + " not found");
 				logService.save(logRec);
 				return new ResponseEntity(HttpStatus.OK);
 			}
 
-			log.info("deviceId:{} trackId: {}",deviceId.toString(),trackId.toString());
+			log.info("deviceid:{} trackid: {}",deviceId.toString(),trackId.toString());
 			log.info("{} {} {}",history.getLastListen(), history.getIsListen());
 			Track track = trackService.getById(trackId);
 			Device device = deviceService.getById(deviceId);

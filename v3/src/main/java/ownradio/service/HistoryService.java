@@ -1,6 +1,7 @@
 package ownradio.service;
 
 import ownradio.domain.History;
+import ownradio.domain.HistoryArray;
 
 import java.util.UUID;
 
@@ -11,5 +12,8 @@ import java.util.UUID;
  */
 public interface HistoryService {
 	void save(History history, Boolean isNewHistoryRec);
+
+	void save2(History history);
+
 	History getById(UUID uuid);
 }

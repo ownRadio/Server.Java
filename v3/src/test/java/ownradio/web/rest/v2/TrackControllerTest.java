@@ -92,7 +92,7 @@ public class TrackControllerTest {
 		obj.put("fileGuid", TRACK_UUID.toString());
 		obj.put("fileName", correctFile.getOriginalFilename());
 		obj.put("filePath", PATH);
-		obj.put("deviceId", DEVICE_UUID.toString());
+		obj.put("deviceid", DEVICE_UUID.toString());
 
 		mockMvc.perform(fileUpload("/v2/tracks")
 				.file(correctFile)
@@ -102,7 +102,7 @@ public class TrackControllerTest {
 //				.param("fileGuid", TRACK_UUID.toString())
 //				.param("fileName", correctFile.getOriginalFilename())
 //				.param("filePath", PATH)
-//				.param("deviceId", DEVICE_UUID.toString())
+//				.param("deviceid", DEVICE_UUID.toString())
 		)
 				.andDo(print())
 				.andExpect(
@@ -118,7 +118,7 @@ public class TrackControllerTest {
 				.param("fileGuid", TRACK_UUID.toString())
 				.param("fileName", correctFile.getOriginalFilename())
 				.param("filePath", PATH)
-				.param("deviceId", DEVICE_UUID.toString())
+				.param("deviceid", DEVICE_UUID.toString())
 		)
 				.andDo(print())
 				.andExpect(
@@ -130,7 +130,7 @@ public class TrackControllerTest {
 	public void getTrackStatusIsOk() throws Exception {
 		given(this.trackService.getById(TRACK_UUID)).willReturn(track);
 
-		mockMvc.perform(get("/v2/tracks/{trackId}", TRACK_UUID).accept(MediaType.TEXT_PLAIN))
+		mockMvc.perform(get("/v2/tracks/{trackid}", TRACK_UUID).accept(MediaType.TEXT_PLAIN))
 				.andDo(print())
 				.andExpect(
 						status().isOk()
@@ -148,7 +148,7 @@ public class TrackControllerTest {
 
 		given(this.trackService.getById(TRACK_UUID)).willReturn(null);
 
-		mockMvc.perform(get("/v2/tracks/{trackId}", TRACK_UUID).accept(MediaType.TEXT_PLAIN))
+		mockMvc.perform(get("/v2/tracks/{trackid}", TRACK_UUID).accept(MediaType.TEXT_PLAIN))
 				.andDo(print())
 				.andExpect(
 						status().isNotFound()
@@ -159,7 +159,7 @@ public class TrackControllerTest {
 	public void getNextTrackIdIsOk() throws Exception {
 		given(this.trackService.getNextTrackId(DEVICE_UUID)).willReturn(TRACK_UUID);
 
-		mockMvc.perform(get("/v2/tracks/{deviceId}/next", DEVICE_UUID))
+		mockMvc.perform(get("/v2/tracks/{deviceid}/next", DEVICE_UUID))
 				.andDo(print())
 				.andExpect(
 						status().isOk()
@@ -174,7 +174,7 @@ public class TrackControllerTest {
 	public void getNextTrackIdIsNotFound() throws Exception {
 		given(this.trackService.getNextTrackId(DEVICE_UUID)).willReturn(null);
 
-		mockMvc.perform(get("/v2/tracks/{deviceId}/next", DEVICE_UUID))
+		mockMvc.perform(get("/v2/tracks/{deviceid}/next", DEVICE_UUID))
 				.andDo(print())
 				.andExpect(
 						status().isNotFound()

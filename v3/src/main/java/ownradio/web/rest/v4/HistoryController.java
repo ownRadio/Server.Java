@@ -6,20 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ownradio.domain.Device;
-import ownradio.domain.History;
-import ownradio.domain.Log;
-import ownradio.domain.Track;
+import ownradio.domain.*;
 import ownradio.service.DeviceService;
 import ownradio.service.HistoryService;
 import ownradio.service.LogService;
 import ownradio.service.TrackService;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Created by a.polunina on 14.03.2017.
@@ -42,31 +36,6 @@ public class HistoryController {
 		this.logService = logService;
 	}
 
-	@Data
-	private static class HistoryDTO {
-		private UUID deviceId;
-		private UUID trackId;
-		private String lastListen;
-		private int isListen; // 1, -1
-
-		public History getHistory() {
-			Calendar calendar;
-			try {
-				calendar = Calendar.getInstance();
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'H:m:s");
-				calendar.setTime( sdf.parse(lastListen));
-			}catch (Exception ex){
-				calendar = null;
-			}
-
-			History history = new History();
-			history.setLastListen(calendar);
-			history.setIsListen(isListen);
-
-			return history;
-		}
-	}
-
 	//form-data
 	@RequestMapping(value = "/{deviceId}/{trackId}", method = RequestMethod.POST)
 	public ResponseEntity save(@PathVariable UUID deviceId, @PathVariable UUID trackId, HistoryDTO historyDTO) {
@@ -87,16 +56,16 @@ public class HistoryController {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));//Time format UTC+0
 			String currentDateTime = dateFormat.format(new Date(history.getLastListen().getTimeInMillis()));
-			logRec.setLogtext("/v4/histories/" + deviceId + "/" + trackId + ". Body: History recid=" + history.getRecid() + ", isListen=" + history.getIsListen() + ", lastListen=" + currentDateTime);
+			logRec.setLogtext("/v4/histories/" + deviceId + "/" + trackId + ". Body: History recid=" + history.getRecid() + ", islisten=" + history.getIsListen() + ", lastlisten=" + currentDateTime);
 			logService.save(logRec);
 
 			if(deviceService.getById(deviceId) == null || trackService.getById(trackId) == null) {
-				logRec.setResponse("HttpStatus=" + HttpStatus.NOT_FOUND + "; deviceId=" + deviceId + " or trackId " + trackId + " not found");
+				logRec.setResponse("HttpStatus=" + HttpStatus.NOT_FOUND + "; deviceid=" + deviceId + " or trackid " + trackId + " not found");
 				logService.save(logRec);
 				return new ResponseEntity(HttpStatus.NOT_FOUND);
 			}
 
-			log.info("deviceId:{} trackId: {}",deviceId.toString(),trackId.toString());
+			log.info("deviceid:{} trackid: {}",deviceId.toString(),trackId.toString());
 			log.info("{} {} {} {}",history.getRecid(), history.getLastListen(), history.getIsListen());
 
 			Track track = trackService.getById(trackId);
@@ -115,7 +84,7 @@ public class HistoryController {
 					historyTemp.setCountsend(((historyTemp.getCountsend()==null?0:historyTemp.getCountsend())) + 1);
 //					historyTemp.setComment(historyTemp.getComment() + (new Date()).toString() + "; ");
 					historyService.save(historyTemp, false);
-					logRec.setResponse("HttpStatus=" + HttpStatus.ALREADY_REPORTED + "; historyId=" + historyTemp.getRecid());
+					logRec.setResponse("HttpStatus=" + HttpStatus.ALREADY_REPORTED + "; recid=" + historyTemp.getRecid());
 					logService.save(logRec);
 					return new ResponseEntity(HttpStatus.ALREADY_REPORTED);
 				} else {
@@ -142,6 +111,72 @@ public class HistoryController {
 		} catch (Exception e) {
 			logRec.setResponse("HttpStatus=" + HttpStatus.INTERNAL_SERVER_ERROR + "; Error:" + e.getMessage());
 			logService.save(logRec);
+			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@RequestMapping(value = "/{deviceId}", method = RequestMethod.POST, headers = "Content-Type=application/json")
+	public ResponseEntity saveListHistory(@PathVariable UUID deviceId, @RequestBody HistoryArray historyDTOs) {
+		try{
+			Log logRec = new Log();
+			logRec.setDeviceid(deviceId);
+			logRec.setRecname("HistoryArray");
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));//Time format UTC+0
+			logRec.setLogtext("/v4/histories/" + deviceId + "/array.");
+			logService.save(logRec);
+
+			Device device = deviceService.getById(deviceId);
+
+			if(device == null || historyDTOs == null) {
+				logRec.setResponse("HttpStatus=" + HttpStatus.NOT_FOUND + "; deviceid=" + deviceId  + " not found OR history is null");
+				logService.save(logRec);
+				return new ResponseEntity(HttpStatus.NOT_FOUND);
+			}
+
+//				List<History> historyList = new ArrayList<>();
+//
+//			for(HistoryDTO historyDTO: historyDTOs.getHistoryList()) {
+//				historyList.add(historyDTO.getHistory());
+//			}
+//
+//
+//
+//			historyService.saveHistory(historyList);
+//			return new ResponseEntity(HttpStatus.OK);
+			for(HistoryDTO historyDTO: historyDTOs.getHistoryList()) {
+				History history = historyDTO.getHistory();
+
+				if(history != null) {
+
+
+					if (history.getRecid() != null) {
+						History historyTemp = historyService.getById(history.getRecid());
+						if (historyTemp != null) {
+							historyTemp.setCountsend(((historyTemp.getCountsend() == null ? 0 : historyTemp.getCountsend())) + 1);
+							historyTemp.setDevice(device);
+							historyService.save(historyTemp, false);
+							logRec.setResponse("HttpStatus=" + HttpStatus.ALREADY_REPORTED + "; recid=" + historyTemp.getRecid());
+							logService.save(logRec);
+						} else {
+							historyTemp = history;
+							historyTemp.setDevice(device);
+							historyTemp.setRecid(history.getRecid());
+							historyTemp.setCountsend(1);
+							historyService.save(historyTemp, true);
+						}
+					} else {
+						history.setCountsend(1);
+						history.setDevice(device);
+						historyService.save(history, true);
+					}
+					log.info("Save history, rating and update ratios");
+					logRec.setResponse("HttpStatus=" + HttpStatus.OK + "; Save history, rating and update ratios");
+					logService.save(logRec);
+				}
+			}
+			return new ResponseEntity(HttpStatus.OK);
+		}catch (Exception ex){
 			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}

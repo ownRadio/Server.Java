@@ -115,11 +115,11 @@ public class TrackController {
 
 		if (track != null) {
 			byte[] bytes = ResourceUtil.read(track.getPath());
-			logRec.setResponse("Http.Status=" + HttpStatus.OK + "; trackId=" + id.toString());
+			logRec.setResponse("Http.Status=" + HttpStatus.OK + "; trackid=" + id.toString());
 			logService.save(logRec);
 			return new ResponseEntity<>(bytes, getHttpAudioHeaders(), HttpStatus.OK);
 		} else {
-			logRec.setResponse("Http.Status=" + HttpStatus.NOT_FOUND + "; trackId=" + id.toString());
+			logRec.setResponse("Http.Status=" + HttpStatus.NOT_FOUND + "; trackid=" + id.toString());
 			logService.save(logRec);
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
@@ -187,7 +187,7 @@ public class TrackController {
 
 				log.info("getNextTrack return {} {}", nextTrack.getMethodid(), trackInfo.get("id"));
 
-				logRec.setResponse("HttpStatus=" + HttpStatus.OK +"; trackId=" + trackInfo.get("id"));
+				logRec.setResponse("HttpStatus=" + HttpStatus.OK +"; trackid=" + trackInfo.get("id"));
 				logService.save(logRec);
 				return new ResponseEntity<>(trackInfo, HttpStatus.OK);
 			}catch (Exception ex){

@@ -53,7 +53,7 @@ public class StatisticsController {
 		try {
 			List<DownloadTrack> downloadedTracks = downloadTrackService.getLastTracksByDevice(deviceId, countTracks);
 //			Device device = new Device();
-//			device.setRecid(deviceId);
+//			device.setRecid(deviceid);
 //			List<DownloadTrack> downloadedTracks = downloadTrackRepository.findFirst3ByDeviceOrderByReccreatedDesc(device);
 
 			return new ResponseEntity<>(downloadedTracks, HttpStatus.OK);
@@ -117,7 +117,7 @@ public class StatisticsController {
 		}
 	}
 
-	//возвращает логи по deviceId
+	//возвращает логи по deviceid
 	@RequestMapping(value = "/getlogbydeviceid/{deviceId}", method = RequestMethod.GET)
 	public ResponseEntity<?> getLogsByDeviceId(@PathVariable UUID deviceId) {
 		try{

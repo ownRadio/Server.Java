@@ -46,7 +46,7 @@ public class DeviceController {
 		if(deviceName == null)
 			deviceName = "New unknown device";
 		deviceRepository.registerdevice(deviceId, deviceName);
-		logRec.setResponse("HttpStatus=" + HttpStatus.OK + "; deviceId=" + deviceId);
+		logRec.setResponse("HttpStatus=" + HttpStatus.OK + "; deviceid=" + deviceId);
 		logService.save(logRec);
 		return new ResponseEntity(HttpStatus.OK);
 	}

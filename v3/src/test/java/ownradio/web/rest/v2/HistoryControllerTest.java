@@ -72,15 +72,15 @@ public class HistoryControllerTest {
 		given(this.deviceService.getById(DEVICE_UUID)).willReturn(device);
 
 		JSONObject obj = new JSONObject();
-		obj.put("lastListen", "2016-11-28T12:34:56");
-		obj.put("isListen", "1");
+		obj.put("lastlisten", "2016-11-28T12:34:56");
+		obj.put("islisten", "1");
 		obj.put("method", "method");
 
-		mockMvc.perform(post("/v2/histories/{deviceId}/{trackId}", DEVICE_UUID, TRACK_UUID)
+		mockMvc.perform(post("/v2/histories/{deviceid}/{trackid}", DEVICE_UUID, TRACK_UUID)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(obj.toString())
-//				.param("lastListen", "2016-11-28 12:34:56")
-//				.param("isListen", "1")
+//				.param("lastlisten", "2016-11-28 12:34:56")
+//				.param("islisten", "1")
 //				.param("method", "method")
 		)
 				.andDo(print())
@@ -98,15 +98,15 @@ public class HistoryControllerTest {
 		doThrow(RuntimeException.class).when(this.historyService).save(any(History.class), anyBoolean());
 
 		JSONObject obj = new JSONObject();
-		obj.put("lastListen", "2016-11-28T12:34:56");
-		obj.put("isListen", "1");
+		obj.put("lastlisten", "2016-11-28T12:34:56");
+		obj.put("islisten", "1");
 		obj.put("method", "method");
 
-		mockMvc.perform(post("/v2/histories/{deviceId}/{trackId}", DEVICE_UUID, TRACK_UUID)
+		mockMvc.perform(post("/v2/histories/{deviceid}/{trackid}", DEVICE_UUID, TRACK_UUID)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(obj.toString())
-//				.param("lastListen", "2016-11-28 12:34:56")
-//				.param("isListen", "1")
+//				.param("lastlisten", "2016-11-28 12:34:56")
+//				.param("islisten", "1")
 //				.param("method", "method")
 		)
 				.andDo(print())

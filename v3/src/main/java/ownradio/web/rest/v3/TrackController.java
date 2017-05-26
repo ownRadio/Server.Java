@@ -97,11 +97,11 @@ public class TrackController {
 
 		if (track != null) {
 			byte[] bytes = ResourceUtil.read(track.getPath());
-			logRec.setResponse("Http.Status=" + HttpStatus.OK + "; trackId=" + id.toString());
+			logRec.setResponse("Http.Status=" + HttpStatus.OK + "; trackid=" + id.toString());
 			logService.save(logRec);
 			return new ResponseEntity<>(bytes, getHttpAudioHeaders(), HttpStatus.OK);
 		} else {
-			logRec.setResponse("Http.Status=" + HttpStatus.NOT_FOUND + "; trackId=" + id.toString());
+			logRec.setResponse("Http.Status=" + HttpStatus.NOT_FOUND + "; trackid=" + id.toString());
 			logService.save(logRec);
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
@@ -135,7 +135,7 @@ public class TrackController {
 				Track track = trackRepository.findOne(nextTrack.getTrackid());
 				//Сохраняем информацию об отданном треке
 //				Device device = new Device();
-//				device.setRecid(deviceId);
+//				device.setRecid(deviceid);
 //				DownloadTrack downloadTrack = new DownloadTrack();
 //				downloadTrack.setTrack(track);
 //				downloadTrack.setDevice(device);
@@ -172,7 +172,7 @@ public class TrackController {
 				trackInfo.put("methodid", nextTrack.getMethodid().toString());
 
 				log.info("getNextTrack return {} {}", nextTrack.getMethodid().toString(), trackInfo.get("id"));
-				logRec.setResponse("HttpStatus=" + HttpStatus.OK +"; trackId=" + trackInfo.get("id"));
+				logRec.setResponse("HttpStatus=" + HttpStatus.OK +"; trackid=" + trackInfo.get("id"));
 				logService.save(logRec);
 				return new ResponseEntity<>(trackInfo, HttpStatus.OK);
 			}catch (Exception ex){

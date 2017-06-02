@@ -48,8 +48,9 @@ public class HistoryController {
 		return getResponseEntity(deviceId, trackId, history);
 	}
 
-	private ResponseEntity getResponseEntity(@PathVariable UUID deviceId, @PathVariable UUID trackId, @RequestBody History history) {
+	private ResponseEntity<?> getResponseEntity(@PathVariable UUID deviceId, @PathVariable UUID trackId, @RequestBody History history) {
 		Log logRec = new Log();
+		Map<String, String> historyResponse = new HashMap<>();
 		try {
 			logRec.setDeviceid(deviceId);
 			logRec.setRecname("History");
@@ -62,7 +63,8 @@ public class HistoryController {
 			if(deviceService.getById(deviceId) == null || trackService.getById(trackId) == null) {
 				logRec.setResponse("HttpStatus=" + HttpStatus.NOT_FOUND + "; deviceid=" + deviceId + " or trackid " + trackId + " not found");
 				logService.save(logRec);
-				return new ResponseEntity(HttpStatus.NOT_FOUND);
+				historyResponse.put("result","false");
+				return new ResponseEntity<>(historyResponse, HttpStatus.NOT_FOUND);
 			}
 
 			log.info("deviceid:{} trackid: {}",deviceId.toString(),trackId.toString());
@@ -86,7 +88,8 @@ public class HistoryController {
 					historyService.save(historyTemp, false);
 					logRec.setResponse("HttpStatus=" + HttpStatus.ALREADY_REPORTED + "; recid=" + historyTemp.getRecid());
 					logService.save(logRec);
-					return new ResponseEntity(HttpStatus.ALREADY_REPORTED);
+					historyResponse.put("result","true");
+					return new ResponseEntity<>(historyResponse, HttpStatus.ALREADY_REPORTED);
 				} else {
 					historyTemp = new History();
 					historyTemp.setRecid(history.getRecid());
@@ -107,16 +110,19 @@ public class HistoryController {
 			logRec.setResponse("HttpStatus=" + HttpStatus.OK + "; Save history, rating and update ratios");
 			logService.save(logRec);
 			//}
-			return new ResponseEntity(HttpStatus.OK);
+			historyResponse.put("result","true");
+			return new ResponseEntity<>(historyResponse, HttpStatus.OK);
 		} catch (Exception e) {
 			logRec.setResponse("HttpStatus=" + HttpStatus.INTERNAL_SERVER_ERROR + "; Error:" + e.getMessage());
 			logService.save(logRec);
-			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+			historyResponse.put("result","false");
+			return new ResponseEntity<>(historyResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
 	@RequestMapping(value = "/{deviceId}", method = RequestMethod.POST, headers = "Content-Type=application/json")
-	public ResponseEntity saveListHistory(@PathVariable UUID deviceId, @RequestBody HistoryArray historyDTOs) {
+	public ResponseEntity<?> saveListHistory(@PathVariable UUID deviceId, @RequestBody HistoryArray historyDTOs) {
+		Map<String, String> historyResponse = new HashMap<>();
 		try{
 			Log logRec = new Log();
 			logRec.setDeviceid(deviceId);
@@ -131,7 +137,8 @@ public class HistoryController {
 			if(device == null || historyDTOs == null) {
 				logRec.setResponse("HttpStatus=" + HttpStatus.NOT_FOUND + "; deviceid=" + deviceId  + " not found OR history is null");
 				logService.save(logRec);
-				return new ResponseEntity(HttpStatus.NOT_FOUND);
+				historyResponse.put("result","false");
+				return new ResponseEntity<>(historyResponse,HttpStatus.NOT_FOUND);
 			}
 
 //				List<History> historyList = new ArrayList<>();
@@ -175,9 +182,11 @@ public class HistoryController {
 					logService.save(logRec);
 				}
 			}
-			return new ResponseEntity(HttpStatus.OK);
+			historyResponse.put("result","true");
+			return new ResponseEntity<>(historyResponse, HttpStatus.OK);
 		}catch (Exception ex){
-			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+			historyResponse.put("result","false");
+			return new ResponseEntity<>(historyResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 

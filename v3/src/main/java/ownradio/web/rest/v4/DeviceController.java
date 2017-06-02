@@ -9,6 +9,8 @@ import ownradio.domain.Log;
 import ownradio.repository.DeviceRepository;
 import ownradio.service.LogService;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -38,6 +40,7 @@ public class DeviceController {
 	}
 
 	private ResponseEntity<?> getResponseEntityRegisterDevice(UUID deviceId, String deviceName) {
+		Map<String, String> deviceResponse = new HashMap<>();
 		Log logRec = new Log();
 		logRec.setDeviceid(deviceId);
 		logRec.setRecname("RegisterDevice");
@@ -48,6 +51,7 @@ public class DeviceController {
 		deviceRepository.registerdevice(deviceId, deviceName);
 		logRec.setResponse("HttpStatus=" + HttpStatus.OK + "; deviceid=" + deviceId);
 		logService.save(logRec);
-		return new ResponseEntity(HttpStatus.OK);
+		deviceResponse.put("result", "true");
+		return new ResponseEntity<>(deviceResponse, HttpStatus.OK);
 	}
 }

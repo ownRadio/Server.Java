@@ -11,6 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 import ownradio.util.ResourceUtil;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -35,19 +37,21 @@ public class LogController {
 	}
 
 	@RequestMapping(value = "/{deviceId}", method = RequestMethod.POST)
-	public ResponseEntity save(@PathVariable UUID deviceId, MultipartFile logFile) {
+	public ResponseEntity<?> save(@PathVariable UUID deviceId, MultipartFile logFile) {
 		if (logFile == null || logFile.isEmpty() || deviceId == null) {
 			return new ResponseEntity(HttpStatus.BAD_REQUEST);
 		}
-
+		Map<String, String> logResponse = new HashMap<>();
 		try {
 			String dirName = "LogFiles/" + deviceId.toString();
 			String fileName = deviceId.toString() + "." + logFile.getOriginalFilename();
 
 			String filePath = ResourceUtil.save(dirName, fileName, logFile);
-			return new ResponseEntity(HttpStatus.CREATED);
+			logResponse.put("result", "true");
+			return new ResponseEntity<>(logResponse, HttpStatus.CREATED);
 		} catch (Exception e) {
-			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+			logResponse.put("result", "false");
+			return new ResponseEntity<>(logResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 	}

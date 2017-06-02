@@ -67,7 +67,8 @@ public class TrackController {
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
-	public ResponseEntity save(TrackDTO trackDTO) {
+	public ResponseEntity<?> save(TrackDTO trackDTO) {
+		Map<String, String> trackResponse = new HashMap<>();
 		Log logRec = new Log();
 		logRec.setRecname("Upload");
 		logRec.setDeviceid(trackDTO.getDeviceId());
@@ -77,7 +78,8 @@ public class TrackController {
 		if (trackDTO.getMusicFile().isEmpty()) {
 			logRec.setResponse("Http.Status=" + HttpStatus.BAD_REQUEST + "; File is absent");
 			logService.save(logRec);
-			return new ResponseEntity(HttpStatus.BAD_REQUEST);
+			trackResponse.put("result", "false");
+			return new ResponseEntity<>(trackResponse, HttpStatus.BAD_REQUEST);
 		}
 
 		try {
@@ -85,11 +87,13 @@ public class TrackController {
 			trackService.setTrackInfo(trackDTO.getTrack().getRecid());
 			logRec.setResponse("Http.Status=" + HttpStatus.CREATED);
 			logService.save(logRec);
-			return new ResponseEntity(HttpStatus.CREATED);
+			trackResponse.put("result", "true");
+			return new ResponseEntity<>(trackResponse, HttpStatus.CREATED);
 		} catch (Exception e) {
 			logRec.setResponse("Http.Status=" + HttpStatus.INTERNAL_SERVER_ERROR + "; Error=" + e.getMessage());
 			logService.save(logRec);
-			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+			trackResponse.put("result", "false");
+			return new ResponseEntity<>(trackResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 	}
@@ -114,9 +118,11 @@ public class TrackController {
 		Track track = trackService.getById(id);
 
 		if (track != null) {
+			log.info("Начинаем читать файл в массив байт");
 			byte[] bytes = ResourceUtil.read(track.getPath());
 			logRec.setResponse("Http.Status=" + HttpStatus.OK + "; trackid=" + id.toString());
 			logService.save(logRec);
+			log.info("Возвращаем файл и код ответа");
 			return new ResponseEntity<>(bytes, getHttpAudioHeaders(), HttpStatus.OK);
 		} else {
 			logRec.setResponse("Http.Status=" + HttpStatus.NOT_FOUND + "; trackid=" + id.toString());
@@ -128,11 +134,13 @@ public class TrackController {
 	private HttpHeaders getHttpAudioHeaders() {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "audio/mpeg");
+		log.info("Формируем заголовки (getHttpAudioHeaders)");
 		return responseHeaders;
 	}
 
 	@RequestMapping(value = "/{deviceId}/next", method = RequestMethod.GET)
 	public ResponseEntity<?> getNextTrack(@PathVariable UUID deviceId) {
+		Map<String, String> trackResponse = new HashMap<>();
 		Log logRec = new Log();
 		logRec.setDeviceid(deviceId);
 		logRec.setRecname("Next");
@@ -146,11 +154,10 @@ public class TrackController {
 			log.info("{}", ex.getMessage());
 			logRec.setResponse("HttpStatus=" + HttpStatus.NOT_FOUND +"; Error:" + ex.getMessage());
 			logService.save(logRec);
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			trackResponse.put("result","false");
+			return new ResponseEntity<>(trackResponse, HttpStatus.NOT_FOUND);
 		}
 
-
-		Map<String, String> trackInfo = new HashMap<>();
 		if (nextTrack != null) {
 			try {
 				Track track = trackRepository.findOne(nextTrack.getTrackid());
@@ -170,36 +177,38 @@ public class TrackController {
 				if(track.getLength() != null && track.getLength() <  120)
 					return getNextTrack(deviceId);
 
-				trackInfo.put("id", nextTrack.getTrackid().toString());
-				trackInfo.put("length", String.valueOf(track.getLength()));
+				trackResponse.put("id", nextTrack.getTrackid().toString());
+				trackResponse.put("length", String.valueOf(track.getLength()));
 				if(track.getRecname() != null && !track.getRecname().isEmpty() && !track.getRecname().equals("null"))
-					trackInfo.put("name", track.getRecname());
+					trackResponse.put("name", track.getRecname());
 				else
-					trackInfo.put("name", "Track");
+					trackResponse.put("name", "Track");
 				if(track.getArtist() != null && !track.getArtist().isEmpty() && !track.getArtist().equals("null"))
-					trackInfo.put("artist", track.getArtist());
+					trackResponse.put("artist", track.getArtist());
 				else
-					trackInfo.put("artist", "Artist");
-				trackInfo.put("pathupload", track.getLocaldevicepathupload());
+					trackResponse.put("artist", "Artist");
+				trackResponse.put("pathupload", track.getLocaldevicepathupload());
 
-				trackInfo.put("timeexecute", nextTrack.getTimeexecute());
+				trackResponse.put("timeexecute", nextTrack.getTimeexecute());
+				trackResponse.put("result","true");
 
+				log.info("getNextTrack return {} {}", nextTrack.getMethodid(), trackResponse.get("id"));
 
-				log.info("getNextTrack return {} {}", nextTrack.getMethodid(), trackInfo.get("id"));
-
-				logRec.setResponse("HttpStatus=" + HttpStatus.OK +"; trackid=" + trackInfo.get("id"));
+				logRec.setResponse("HttpStatus=" + HttpStatus.OK +"; trackid=" + trackResponse.get("id"));
 				logService.save(logRec);
-				return new ResponseEntity<>(trackInfo, HttpStatus.OK);
+				return new ResponseEntity<>(trackResponse, HttpStatus.OK);
 			}catch (Exception ex){
 				log.info("{}", ex.getMessage());
 				logRec.setResponse("HttpStatus=" + HttpStatus.NOT_FOUND +"; Error:" + ex.getMessage());
 				logService.save(logRec);
-				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+				trackResponse.put("result","false");
+				return new ResponseEntity<>(trackResponse, HttpStatus.NOT_FOUND);
 			}
 		} else {
 			logRec.setResponse("HttpStatus=" + HttpStatus.NOT_FOUND +"; Error: Track is not found");
 			logService.save(logRec);
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			trackResponse.put("result","false");
+			return new ResponseEntity<>(trackResponse, HttpStatus.NOT_FOUND);
 		}
 	}
 }

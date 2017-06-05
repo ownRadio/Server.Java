@@ -2,6 +2,7 @@ package ownradio.service;
 
 import ownradio.domain.DownloadTrack;
 import ownradio.domain.TracksHistory;
+import ownradio.domain.TracksRating;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,4 +18,6 @@ public interface DownloadTrackService {
 	List<DownloadTrack> getLastTracksByDevice(UUID deviceId, Integer countTracks);
 
 	List<TracksHistory> getTracksHistoryByDevice(UUID deviceId, Integer countRows);
+
+	List<TracksRating> getTracksRatingByDevice(UUID deviceId, Integer countRows);
 }

@@ -5,13 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ownradio.domain.Device;
-import ownradio.domain.DownloadTrack;
-import ownradio.domain.TracksHistory;
-import ownradio.domain.UsersRating;
-import ownradio.repository.DeviceRepository;
+import ownradio.domain.*;
 import ownradio.service.DeviceService;
 import ownradio.service.DownloadTrackService;
+import ownradio.service.LogService;
 import ownradio.service.UserService;
 
 import java.util.List;
@@ -29,13 +26,14 @@ public class StatisticsController {
 	private final UserService userService;
 	private final DeviceService deviceService;
 	private final DownloadTrackService downloadTrackService;
+	private final LogService logService;
 
 	@Autowired
-	public StatisticsController(UserService userService, DeviceService deviceService, DownloadTrackService downloadTrackService){
+	public StatisticsController(UserService userService, DeviceService deviceService, DownloadTrackService downloadTrackService, LogService logService){
 		this.userService = userService;
 		this.deviceService = deviceService;
 		this.downloadTrackService = downloadTrackService;
-
+		this.logService = logService;
 	}
 
 	@RequestMapping(value = "/{userId}/getuserdevices", method = RequestMethod.GET)
@@ -55,7 +53,7 @@ public class StatisticsController {
 		try {
 			List<DownloadTrack> downloadedTracks = downloadTrackService.getLastTracksByDevice(deviceId, countTracks);
 //			Device device = new Device();
-//			device.setRecid(deviceId);
+//			device.setRecid(deviceid);
 //			List<DownloadTrack> downloadedTracks = downloadTrackRepository.findFirst3ByDeviceOrderByReccreatedDesc(device);
 
 			return new ResponseEntity<>(downloadedTracks, HttpStatus.OK);
@@ -86,6 +84,17 @@ public class StatisticsController {
 		}
 	}
 
+	//возвращает историю выдачи и рейтинг прослушивания треков для данного устройства
+	@RequestMapping(value = "/{deviceId}/{countTracks}/gettracksratingbydevice", method = RequestMethod.GET)
+	public ResponseEntity<?> getTracksRatingByDevice(@PathVariable UUID deviceId, @PathVariable Integer countTracks) {
+		try {
+			List<TracksRating> tracksRatings = downloadTrackService.getTracksRatingByDevice(deviceId, countTracks);
+			return new ResponseEntity<>(tracksRatings, HttpStatus.OK);
+		}catch (Exception ex){
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
 	@RequestMapping(value = "/getlastdevices", method = RequestMethod.GET)
 	public ResponseEntity<?> getLastDevices() {
 		try{
@@ -96,6 +105,8 @@ public class StatisticsController {
 		}
 	}
 
+	//возвращает пользователей, количество дослушанных ими треков, количество скачанных треков
+	//отсортированных по убыванию активности (по последнему запросу трека)
 	@RequestMapping(value = "/getlastusers/{countUsers}", method = RequestMethod.GET)
 	public ResponseEntity<?> getLastUsers(@PathVariable Integer countUsers) {
 		try{
@@ -105,5 +116,17 @@ public class StatisticsController {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
+
+	//возвращает логи по deviceid
+	@RequestMapping(value = "/getlogbydeviceid/{deviceId}", method = RequestMethod.GET)
+	public ResponseEntity<?> getLogsByDeviceId(@PathVariable UUID deviceId) {
+		try{
+			List<Log> logList = logService.getByDeviceId(deviceId);
+			return new ResponseEntity<>(logList, HttpStatus.OK);
+		}catch (Exception ex){
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
 }
 

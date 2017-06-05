@@ -113,11 +113,11 @@ BEGIN
 	VALUES (i_trackid, i_localdevicepathupload, i_path, i_deviceid, now(), 2, 1);
 
 	-- Добавляем запись о прослушивании трека в таблицу истории прослушивания
-	INSERT INTO histories (recid, deviceid, trackid, isListen, lastListen, methodid, reccreated)
+	INSERT INTO histories (recid, deviceid, trackid, islisten, lastlisten, methodid, reccreated)
 	VALUES (i_historyid, i_deviceid, i_trackid, 1, now(), 2, now());
 
 	-- Добавляем запись в таблицу рейтингов
-	INSERT INTO ratings (recid, userid, trackid, lastListen, ratingsum, reccreated)
+	INSERT INTO ratings (recid, userid, trackid, lastlisten, ratingsum, reccreated)
 	VALUES (i_ratingid, i_userid, i_trackid, now(), 1, now());
 
 	RETURN TRUE;
@@ -203,7 +203,7 @@ CREATE OR REPLACE FUNCTION getnexttrack(i_deviceid UUID)
 		track    CHARACTER VARYING
 	,   methodid INTEGER
 	,	useridrecommended CHARACTER VARYING
-	,	txtrecommendedinfo	CHARACTER VARYING)
+	,	txtrecommendinfo	CHARACTER VARYING)
 AS
 '
 DECLARE
@@ -242,7 +242,7 @@ BEGIN
 			 CAST((nexttrack.track) AS CHARACTER VARYING),
 			 nexttrack.methodid,
 			 CAST((nexttrack.useridrecommended) AS CHARACTER VARYING),
-			 nexttrack.txtrecommendedinfo
+			 nexttrack.txtrecommendinfo
 		 FROM getnexttrackid_v10(i_deviceid) AS nexttrack;
 END;
 '
@@ -358,7 +358,7 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION getnexttrackid_v8(IN i_deviceid uuid)
 	RETURNS TABLE(track uuid, methodid integer,
 				  useridrecommended uuid
-	,	txtrecommendedinfo character varying
+	,	txtrecommendinfo character varying
 	) AS
 '
 DECLARE
@@ -596,7 +596,7 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION getlasttracks(
 	IN i_deviceid uuid,
 	IN i_count integer)
-	RETURNS TABLE(recid uuid, reccreated timestamp without time zone, recname character varying, recupdated timestamp without time zone, deviceid uuid, trackid uuid, methodid integer, txtrecommendinfo character varying, userrecommend uuid) AS
+	RETURNS TABLE(recid uuid, reccreated timestamp without time zone, recname character varying, recupdated timestamp without time zone, deviceid uuid, trackid uuid, methodid integer, txtrecommendinfo character varying, userrecommendid uuid) AS
 '
 BEGIN
 	IF i_count < 0 THEN
@@ -623,7 +623,7 @@ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION getnexttrackid_v10(IN i_deviceid uuid)
-	RETURNS TABLE(track uuid, methodid integer, useridrecommended uuid, txtrecommendedinfo character varying) AS
+	RETURNS TABLE(track uuid, methodid integer, useridrecommended uuid, txtrecommendinfo character varying) AS
 '
 DECLARE
 	i_userid   UUID = i_deviceid; --пока не реалезовано объединение пользователей - гуиды одинаковые
@@ -634,7 +634,7 @@ DECLARE
 	exceptusers uuid ARRAY; -- массив пользователей для i_userid с котороми не было пересечений по трекам
 BEGIN
 	DROP TABLE IF EXISTS temp_track;
-	CREATE TEMP TABLE temp_track(track uuid, methodid integer, useridrecommended uuid, txtrecommendedinfo character varying);
+	CREATE TEMP TABLE temp_track(track uuid, methodid integer, useridrecommended uuid, txtrecommendinfo character varying);
 
 	-- Выбираем следующий трек
 
@@ -686,7 +686,7 @@ BEGIN
 
 		-- Если такой трек найден - выход из функции, возврат найденного значения
 		IF FOUND THEN
-			INSERT INTO downloadtracks (SELECT uuid_generate_v4(),now(),null, null, i_userid, temp_track.track AS trackid, temp_track.methodid AS methodid, temp_track.txtrecommendedinfo AS txtrecommendinfo, temp_track.useridrecommended AS userrecommend FROM temp_track);
+			INSERT INTO downloadtracks (SELECT uuid_generate_v4(),now(),null, null, i_userid, temp_track.track AS trackid, temp_track.methodid AS methodid, temp_track.txtrecommendinfo AS txtrecommendinfo, temp_track.useridrecommended AS userrecommendid FROM temp_track);
 			RETURN QUERY SELECT * FROM temp_track;
 			RETURN;
 		END IF;
@@ -745,7 +745,7 @@ BEGIN
 		LIMIT 1);
 		-- Если нашли что рекомендовать - выходим из функции
 		IF found THEN
-			INSERT INTO downloadtracks (SELECT uuid_generate_v4(),now(),null, null, i_userid, temp_track.track AS trackid, temp_track.methodid AS methodid, temp_track.txtrecommendedinfo AS txtrecommendinfo, temp_track.useridrecommended AS userrecommend FROM temp_track);
+			INSERT INTO downloadtracks (SELECT uuid_generate_v4(),now(),null, null, i_userid, temp_track.track AS trackid, temp_track.methodid AS methodid, temp_track.txtrecommendinfo AS txtrecommendinfo, temp_track.useridrecommended AS userrecommendid FROM temp_track);
 			RETURN QUERY SELECT * FROM temp_track;
 			RETURN;
 		END IF;
@@ -786,7 +786,7 @@ BEGIN
 		LIMIT 1);
 		-- Если нашли что рекомендовать - выходим из функции
 		IF found THEN
-			INSERT INTO downloadtracks (SELECT uuid_generate_v4(),now(),null, null, i_userid, temp_track.track AS trackid, temp_track.methodid AS methodid, temp_track.txtrecommendedinfo AS txtrecommendinfo, temp_track.useridrecommended AS userrecommend FROM temp_track);
+			INSERT INTO downloadtracks (SELECT uuid_generate_v4(),now(),null, null, i_userid, temp_track.track AS trackid, temp_track.methodid AS methodid, temp_track.txtrecommendinfo AS txtrecommendinfo, temp_track.useridrecommended AS userrecommendid FROM temp_track);
 			RETURN QUERY SELECT * FROM temp_track;
 			RETURN;
 		ELSE
@@ -818,7 +818,7 @@ BEGIN
 
 	-- Если такой трек найден - выход из функции, возврат найденного значения
 	IF FOUND THEN
-		INSERT INTO downloadtracks (SELECT uuid_generate_v4(),now(),null, null, i_userid, temp_track.track AS trackid, temp_track.methodid AS methodid, temp_track.txtrecommendedinfo AS txtrecommendinfo, temp_track.useridrecommended AS userrecommend FROM temp_track);
+		INSERT INTO downloadtracks (SELECT uuid_generate_v4(),now(),null, null, i_userid, temp_track.track AS trackid, temp_track.methodid AS methodid, temp_track.txtrecommendinfo AS txtrecommendinfo, temp_track.useridrecommended AS userrecommendid FROM temp_track);
 		RETURN QUERY SELECT * FROM temp_track;
 		RETURN;
 	END IF;
@@ -837,7 +837,7 @@ BEGIN
 		  AND (length > 120 OR length IS NULL)
 	ORDER BY RANDOM()
 	LIMIT 1);
-	INSERT INTO downloadtracks (SELECT uuid_generate_v4(),now(),null, null, i_userid, temp_track.track AS trackid, temp_track.methodid AS methodid, temp_track.txtrecommendedinfo AS txtrecommendinfo, temp_track.useridrecommended AS userrecommend FROM temp_track);
+	INSERT INTO downloadtracks (SELECT uuid_generate_v4(),now(),null, null, i_userid, temp_track.track AS trackid, temp_track.methodid AS methodid, temp_track.txtrecommendinfo AS txtrecommendinfo, temp_track.useridrecommended AS userrecommendid FROM temp_track);
 	RETURN QUERY SELECT * FROM temp_track;
 	RETURN;
 END;
@@ -924,7 +924,7 @@ LANGUAGE plpgsql;
 DROP FUNCTION getnexttrack_v2(uuid);
 
 CREATE OR REPLACE FUNCTION getnexttrack_v2(IN i_deviceid uuid)
-	RETURNS TABLE(track character varying, method integer, useridrecommended character varying, txtrecommendedinfo character varying, timeexecute character varying) AS
+	RETURNS TABLE(track character varying, method integer, useridrecommended character varying, txtrecommendinfo character varying, timeexecute character varying) AS
 '
 DECLARE
 		declare t timestamptz := clock_timestamp(); -- запоминаем начальное время выполнения процедуры
@@ -963,7 +963,7 @@ BEGIN
 					 CAST((nexttrack.track) AS CHARACTER VARYING),
 					 nexttrack.methodid,
 					 CAST((nexttrack.useridrecommended) AS CHARACTER VARYING),
-					 nexttrack.txtrecommendedinfo,
+					 nexttrack.txtrecommendinfo,
 					 CAST((clock_timestamp() - t ) AS CHARACTER VARYING) -- возвращаем время выполнения процедуры
 				 FROM getnexttrackid_v13(i_deviceid) AS nexttrack;
 END;

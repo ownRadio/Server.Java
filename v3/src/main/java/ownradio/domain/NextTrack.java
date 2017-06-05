@@ -15,6 +15,6 @@ public class NextTrack {
 	private UUID trackid;
 	private Integer methodid;
 	private UUID useridrecommended;
-	private String txtrecommendedinfo;
+	private String txtrecommendinfo;
 	private String timeexecute;
 }

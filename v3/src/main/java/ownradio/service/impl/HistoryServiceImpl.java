@@ -59,4 +59,9 @@ public class HistoryServiceImpl implements HistoryService {
 			}
 		}
 	}
+
+	@Override
+	public void save2(History history) {
+		historyRepository.saveAndFlush(history);
+	}
 }

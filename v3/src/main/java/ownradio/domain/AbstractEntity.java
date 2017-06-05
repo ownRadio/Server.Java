@@ -2,12 +2,7 @@ package ownradio.domain;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.HibernateException;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.id.AbstractUUIDGenerator;
-import org.hibernate.id.UUIDGenerationStrategy;
-import org.hibernate.id.UUIDGenerator;
 import ownradio.annotation.DisplayName;
 
 import javax.persistence.*;
@@ -31,7 +26,6 @@ public abstract class AbstractEntity implements Serializable {
 	@GeneratedValue(generator = "uuid")
 	@GenericGenerator(name = "uuid",  strategy="ownradio.util.IdOrGenerate")
 	@Column(unique = true)
-//	@Column(insertable=true, updatable=true, unique=true, nullable=false)
 	private UUID recid;
 
 	private String recname;

@@ -5,12 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ownradio.domain.Device;
-import ownradio.domain.User;
+import ownradio.domain.Log;
 import ownradio.repository.DeviceRepository;
-import ownradio.service.DeviceService;
-import ownradio.service.UserService;
+import ownradio.service.LogService;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -22,10 +22,11 @@ import java.util.UUID;
 @RequestMapping("/v4/devices")
 public class DeviceController {
 	private final DeviceRepository deviceRepository;
-
+	private final LogService logService;
 	@Autowired
-	public DeviceController(DeviceRepository deviceRepository) {
+	public DeviceController(DeviceRepository deviceRepository, LogService logService) {
 		this.deviceRepository = deviceRepository;
+		this.logService = logService;
 	}
 
 	@RequestMapping(value = "/{deviceId}/registerdevice", method = RequestMethod.GET)
@@ -39,9 +40,18 @@ public class DeviceController {
 	}
 
 	private ResponseEntity<?> getResponseEntityRegisterDevice(UUID deviceId, String deviceName) {
+		Map<String, String> deviceResponse = new HashMap<>();
+		Log logRec = new Log();
+		logRec.setDeviceid(deviceId);
+		logRec.setRecname("RegisterDevice");
+		logRec.setLogtext("/v4/devices/" + deviceId + "/" + deviceName + "/registerdevice");
+		logService.save(logRec);
 		if(deviceName == null)
 			deviceName = "New unknown device";
 		deviceRepository.registerdevice(deviceId, deviceName);
-		return new ResponseEntity(HttpStatus.OK);
+		logRec.setResponse("HttpStatus=" + HttpStatus.OK + "; deviceid=" + deviceId);
+		logService.save(logRec);
+		deviceResponse.put("result", "true");
+		return new ResponseEntity<>(deviceResponse, HttpStatus.OK);
 	}
 }

@@ -1,6 +1,5 @@
 package ownradio.service;
 
-import org.springframework.data.jpa.repository.Query;
 import ownradio.domain.Device;
 
 import java.util.List;

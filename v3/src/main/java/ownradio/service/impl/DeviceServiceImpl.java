@@ -49,7 +49,7 @@ public class DeviceServiceImpl implements DeviceService {
 
 	@Override
 	public List<Device> getByUserid(UUID uuid) {
-		return deviceRepository.getUserDevices(uuid);
+		return deviceRepository.findByUser(uuid);
 	}
 
 	@Override

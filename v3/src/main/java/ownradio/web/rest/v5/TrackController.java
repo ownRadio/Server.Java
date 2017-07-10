@@ -4,17 +4,17 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ownradio.domain.Device;
 import ownradio.domain.Log;
 import ownradio.domain.Track;
 import ownradio.service.LogService;
 import ownradio.service.TrackService;
+import ownradio.util.MultipartFileSender;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.UUID;
 
 /**
@@ -87,5 +87,21 @@ public class TrackController {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
+	}
+
+	//Метод выдачи трека, способный выдавать как весь файл сразу, так и ранжируя по байтам
+	//Для получения определенный байт файла требуется задать диапазон в заголовке запроса
+	//Пример: ("Range","bytes=0-49") запрашивает первые 50 байт файла
+	@RequestMapping(value="/{id}/range", method = RequestMethod.GET)
+	public void serveFile(@PathVariable  UUID id, HttpServletRequest request, HttpServletResponse response) {
+		Track track = trackService.getById(id);
+		try {
+			MultipartFileSender.fromURIString(track.getPath())
+					.with(request)
+					.with(response)
+					.serveResource();
+		}catch (Exception ex){
+
+		}
 	}
 }

@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ownradio.domain.Device;
 import ownradio.domain.Log;
 import ownradio.domain.Track;
+import ownradio.repository.TrackRepository;
 import ownradio.service.LogService;
 import ownradio.service.TrackService;
 import ownradio.util.MultipartFileSender;
@@ -27,10 +28,12 @@ import java.util.UUID;
 public class TrackController {
 	private final TrackService trackService;
 	private final LogService logService;
+	private final TrackRepository trackRepository;
 
-	public TrackController(TrackService trackService, LogService logService) {
+	public TrackController(TrackService trackService, LogService logService, TrackRepository trackRepository) {
 		this.trackService = trackService;
 		this.logService = logService;
+		this.trackRepository = trackRepository;
 	}
 
 
@@ -89,6 +92,50 @@ public class TrackController {
 
 	}
 
+	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
+	public void getTrack(@PathVariable UUID id, HttpServletRequest request, HttpServletResponse response) {
+		getResponseEntity(id, null, request, response);
+	}
+
+
+	@RequestMapping(value = "/{id}/{deviceId}", method = RequestMethod.GET)
+	public void getTrackWithDeviceId(@PathVariable UUID id, @PathVariable UUID deviceId, HttpServletRequest request, HttpServletResponse response) {
+		getResponseEntity(id, deviceId, request, response);
+	}
+
+	//Метод выдачи трека, способный выдавать как весь файл сразу, так и ранжируя по байтам
+	//Для получения определенный байт файла требуется задать диапазон в заголовке запроса
+	//Пример: ("Range","bytes=0-49") запрашивает первые 50 байт файла
+	private void getResponseEntity(@PathVariable UUID id, @PathVariable UUID deviceId, HttpServletRequest request, HttpServletResponse response){
+		Log logRec = new Log();
+		logRec.setRecname("GetTrackdById");
+		logRec.setDeviceid(deviceId);
+		logRec.setLogtext("/v5/tracks/" + id + "/" + deviceId + ", Range " + request.getHeader("Range"));
+		logService.save(logRec);
+		Track track = trackService.getById(id);
+		try {
+			if (track != null) {
+				try {
+					MultipartFileSender.fromURIString(track.getPath())
+							.with(request)
+							.with(response)
+							.serveResource();
+				} catch (Exception ex) {
+
+				}
+
+				logRec.setResponse("Http.Status=" + HttpStatus.OK + "; trackid=" + id.toString());
+				logService.save(logRec);
+			} else {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND);
+				logRec.setResponse("Http.Status=" + HttpServletResponse.SC_NOT_FOUND+ "; trackid=" + id.toString());
+				logService.save(logRec);
+			}
+		}catch (Exception ex){
+
+		}
+	}
+
 	//Метод выдачи трека, способный выдавать как весь файл сразу, так и ранжируя по байтам
 	//Для получения определенный байт файла требуется задать диапазон в заголовке запроса
 	//Пример: ("Range","bytes=0-49") запрашивает первые 50 байт файла
@@ -103,5 +150,27 @@ public class TrackController {
 		}catch (Exception ex){
 
 		}
+	}
+
+	@RequestMapping(value="/{id}/{deviceId}", method = RequestMethod.POST, headers = "Content-Type=application/json")
+	public ResponseEntity<?> setTrackIsCorrect(@PathVariable UUID id, @PathVariable UUID deviceId, @RequestBody Track trackEntity){
+		Log logRec = new Log();
+		logRec.setRecname("setTrackIsCorrect");
+		logRec.setDeviceid(deviceId);
+		logRec.setLogtext("/v5/tracks/" + id + "/" + deviceId + "isCorrect" + trackEntity.getIscorrect());
+		logService.save(logRec);
+		Track track = trackService.getById(id);
+		if(track != null && trackEntity.getIscorrect() != null){
+			track.setIscorrect(trackEntity.getIscorrect());
+			trackRepository.saveAndFlush(track);
+			logRec.setResponse("HttpStatus = " + HttpStatus.CREATED + ", isCorrect = " + trackEntity.getIscorrect());
+			logService.save(logRec);
+			return new ResponseEntity<>(HttpStatus.CREATED);
+		}else {
+			logRec.setResponse("Track not fount. HttpStatus = " + HttpStatus.NOT_FOUND + ", isCorrect = " + trackEntity.getIscorrect());
+			logService.save(logRec);
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+
 	}
 }

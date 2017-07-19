@@ -3,8 +3,9 @@ package ownradio.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ownradio.domain.Device;
-import ownradio.domain.UsersRating;
+import ownradio.domain.User;
 import ownradio.repository.DeviceRepository;
+import ownradio.repository.UserRepository;
 import ownradio.service.DeviceService;
 
 import java.util.ArrayList;
@@ -15,16 +16,30 @@ import java.util.UUID;
 public class DeviceServiceImpl implements DeviceService {
 
 	private final DeviceRepository deviceRepository;
+	private final UserRepository userRepository;
 
 	@Autowired
-	public DeviceServiceImpl(DeviceRepository deviceRepository) {
+	public DeviceServiceImpl(DeviceRepository deviceRepository, UserRepository userRepository) {
 		this.deviceRepository = deviceRepository;
+		this.userRepository = userRepository;
 	}
 
 
 	@Override
 	public void save(Device device) {
+		User user = userRepository.findOne(device.getRecid());
+		if(user == null) {
+			user = new User();
+			user.setRecid(device.getRecid());
+			user.setRecname(device.getRecname());
+		} else {
+			user.setRecname(device.getRecname());
+		}
+		userRepository.saveAndFlush(user);
+		device.setUser(user);
 		deviceRepository.saveAndFlush(device);
+
+
 	}
 
 	@Override
@@ -34,7 +49,7 @@ public class DeviceServiceImpl implements DeviceService {
 
 	@Override
 	public List<Device> getByUserid(UUID uuid) {
-		return deviceRepository.getUserDevices(uuid);
+		return deviceRepository.findByUser(uuid);
 	}
 
 	@Override

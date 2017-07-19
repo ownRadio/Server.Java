@@ -1,9 +1,13 @@
 package ownradio.service;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 import ownradio.domain.NextTrack;
 import ownradio.domain.Track;
+import ownradio.domain.UploadersRating;
+import ownradio.domain.User;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -15,6 +19,8 @@ public interface TrackService {
 
 	Track getById(UUID id);
 
+	List<Track> getByDeviceId(UUID id, Pageable pageable);
+
 	UUID getNextTrackId(UUID deviceId);
 
 	NextTrack getNextTrackIdV2(UUID deviceId);
@@ -22,4 +28,6 @@ public interface TrackService {
 	void save(Track track, MultipartFile file);
 
 	void setTrackInfo(UUID trackid);
+
+	List<UploadersRating> getUploadersRating();
 }

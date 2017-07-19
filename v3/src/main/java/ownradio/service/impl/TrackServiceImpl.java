@@ -4,17 +4,22 @@ import com.mpatric.mp3agic.ID3v1;
 import com.mpatric.mp3agic.ID3v2;
 import com.mpatric.mp3agic.Mp3File;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import ownradio.domain.NextTrack;
 import ownradio.domain.Track;
+import ownradio.domain.UploadersRating;
 import ownradio.repository.TrackRepository;
+import ownradio.repository.UserRepository;
 import ownradio.service.TrackService;
 import ownradio.util.DecodeUtil;
 import ownradio.util.ResourceUtil;
 
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,16 +27,24 @@ import java.util.UUID;
 public class TrackServiceImpl implements TrackService {
 
 	private final TrackRepository trackRepository;
+	private final UserRepository userRepository;
 
 	@Autowired
-	public TrackServiceImpl(TrackRepository trackRepository) {
+	public TrackServiceImpl(TrackRepository trackRepository, UserRepository userRepository) {
 		this.trackRepository = trackRepository;
+		this.userRepository = userRepository;
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public Track getById(UUID id) {
 		return trackRepository.findOne(id);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<Track> getByDeviceId(UUID id, Pageable pageable) {
+		return trackRepository.findAllByDeviceRecidOrderByReccreatedDesc(id, pageable);
 	}
 
 	@Override
@@ -44,7 +57,13 @@ public class TrackServiceImpl implements TrackService {
 	@Transactional
 	public NextTrack getNextTrackIdV2(UUID deviceId) {
 		NextTrack nextTrack = new NextTrack();
-		List<Object[]> objects = trackRepository.getNextTrackV2(deviceId);
+
+		List<Object[]> objects = null;
+		try{
+			objects = trackRepository.getNextTrackV2(deviceId);
+		}catch (Exception ex){
+			ex.getLocalizedMessage();
+		}
 		if(objects != null) {
 			nextTrack.setTrackid(UUID.fromString((String) objects.get(0)[0]));
 			nextTrack.setMethodid((Integer) objects.get(0)[1]);
@@ -89,6 +108,9 @@ public class TrackServiceImpl implements TrackService {
 				track.setLength((int) mp3File.getLengthInSeconds());//duration track
 				track.setSize((int) mp3File.getLength() / 1024);//size in kilobytes
 
+				if(mp3File.getLayer().equals("II"))
+					track.setIscorrect(0);
+
 				if (mp3File.hasId3v2Tag()) {
 					ID3v2 id3v2Tag2 = mp3File.getId3v2Tag();
 					title = DecodeUtil.Decode(id3v2Tag2.getTitle());
@@ -118,5 +140,24 @@ public class TrackServiceImpl implements TrackService {
 //				ex.printStackTrace();
 			}
 		}
+	}
+
+	@Transactional
+	@Override
+	public List<UploadersRating> getUploadersRating(){
+		List<UploadersRating> uploadersRatingList = new ArrayList<>();
+		List<Object[]> objects = trackRepository.findUploadersRating();
+		if (objects != null) {
+			for (int i = 0; i < objects.size(); i++) {
+				UploadersRating uploadersRating = new UploadersRating();
+				uploadersRating.setUser(userRepository.findOne(UUID.fromString((String) objects.get(i)[0])));
+				uploadersRating.setUploadtracks((BigInteger)objects.get(i)[1]);
+				uploadersRating.setLastactive((String)objects.get(i)[2]);
+				uploadersRatingList.add(uploadersRating);
+			}
+	} else {
+		return null;
+	}
+		return uploadersRatingList;
 	}
 }

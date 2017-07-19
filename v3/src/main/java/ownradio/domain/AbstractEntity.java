@@ -23,8 +23,8 @@ public abstract class AbstractEntity implements Serializable {
 
 	@DisplayName(key = "id")
 	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid",  strategy="ownradio.util.IdOrGenerate")
+//	@GeneratedValue(generator = "uuid")
+//	@GenericGenerator(name = "uuid",  strategy="ownradio.util.IdOrGenerate")
 	@Column(unique = true)
 	private UUID recid;
 
@@ -39,6 +39,9 @@ public abstract class AbstractEntity implements Serializable {
 	@PrePersist
 	public void beforePersist() {
 		setReccreated(Calendar.getInstance());
+		if (recid == null) {
+			recid = UUID.randomUUID();
+		}
 	}
 
 	@PreUpdate

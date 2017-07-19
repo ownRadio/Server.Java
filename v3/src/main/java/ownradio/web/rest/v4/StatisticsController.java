@@ -2,14 +2,12 @@ package ownradio.web.rest.v4;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ownradio.domain.*;
-import ownradio.service.DeviceService;
-import ownradio.service.DownloadTrackService;
-import ownradio.service.LogService;
-import ownradio.service.UserService;
+import ownradio.service.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,13 +25,15 @@ public class StatisticsController {
 	private final DeviceService deviceService;
 	private final DownloadTrackService downloadTrackService;
 	private final LogService logService;
+	private final TrackService trackService;
 
 	@Autowired
-	public StatisticsController(UserService userService, DeviceService deviceService, DownloadTrackService downloadTrackService, LogService logService){
+	public StatisticsController(UserService userService, DeviceService deviceService, DownloadTrackService downloadTrackService, LogService logService, TrackService trackService){
 		this.userService = userService;
 		this.deviceService = deviceService;
 		this.downloadTrackService = downloadTrackService;
 		this.logService = logService;
+		this.trackService = trackService;
 	}
 
 	@RequestMapping(value = "/{userId}/getuserdevices", method = RequestMethod.GET)
@@ -128,5 +128,30 @@ public class StatisticsController {
 		}
 	}
 
+	//возвращает рейгинг uploader'ов
+	@RequestMapping(value = "/uploaders", method = RequestMethod.GET)
+	public ResponseEntity<?> getUploaders() {
+		try{
+			List<UploadersRating> uploadersRatingsList = trackService.getUploadersRating();
+			return new ResponseEntity<>(uploadersRatingsList, HttpStatus.OK);
+		}catch (Exception ex){
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
+	//возвращает все треки uploader'a
+	@RequestMapping(value = "/uploaders/{deviceId}", params = {"page", "size" }, method = RequestMethod.GET)
+	public ResponseEntity<?> getUploadersTracks(@PathVariable UUID deviceId, @RequestParam( value="page", required=false) Integer page, @RequestParam( value="size" , required=false) Integer size) {
+		try{
+			if(page == null)
+				page = 0;
+			if(size == null)
+				size = Integer.MAX_VALUE;
+			List<Track> trackList = trackService.getByDeviceId(deviceId, new PageRequest(page, size));
+			return new ResponseEntity<>(trackList, HttpStatus.OK);
+		}catch (Exception ex){
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
 }
 

@@ -12,6 +12,7 @@ import ownradio.domain.Device;
 import ownradio.domain.Track;
 import ownradio.domain.User;
 import ownradio.repository.TrackRepository;
+import ownradio.repository.UserRepository;
 import ownradio.service.impl.TrackServiceImpl;
 
 import java.io.File;
@@ -27,6 +28,7 @@ import static ownradio.util.ResourceUtil.UPLOAD_DIR;
 public class TrackServiceTest {
 	@Mock
 	private TrackRepository trackRepository;
+	private UserRepository userRepository;
 
 	protected TrackService trackService;
 
@@ -37,7 +39,7 @@ public class TrackServiceTest {
 
 	@Before
 	public void setUp() throws Exception {
-		trackService = new TrackServiceImpl(trackRepository);
+		trackService = new TrackServiceImpl(trackRepository, userRepository);
 		expected = new Track();
 		expected.setRecid(trackId);
 

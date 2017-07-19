@@ -13,8 +13,8 @@ import java.util.UUID;
  * @author Alpenov Tanat
  */
 public interface DeviceRepository extends JpaRepository<Device, UUID> {
-	@Query(value = "select * from devices where userid = ?1", nativeQuery = true)
-	List<Device> getUserDevices(UUID userid);
+	@Query(value = "select d from Device d where d.user.recid = ?1")
+	List<Device> findByUser(UUID userId);
 
 	@Query(value = "select * from registerdevice(?1, ?2)", nativeQuery = true)
 	boolean registerdevice(UUID deviceId, String deviceName);

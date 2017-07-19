@@ -108,6 +108,9 @@ public class TrackServiceImpl implements TrackService {
 				track.setLength((int) mp3File.getLengthInSeconds());//duration track
 				track.setSize((int) mp3File.getLength() / 1024);//size in kilobytes
 
+				if(mp3File.getLayer().equals("II"))
+					track.setIscorrect(0);
+
 				if (mp3File.hasId3v2Tag()) {
 					ID3v2 id3v2Tag2 = mp3File.getId3v2Tag();
 					title = DecodeUtil.Decode(id3v2Tag2.getTitle());

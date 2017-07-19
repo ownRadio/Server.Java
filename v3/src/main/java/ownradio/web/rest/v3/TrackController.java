@@ -154,9 +154,11 @@ public class TrackController {
 				if(track.getIsfilledinfo() == null || track.getIsfilledinfo() != 1)
 					trackService.setTrackInfo(track.getRecid());
 
+				if(track.getIscorrect() != null && track.getIscorrect() == 0)
+					return getNextTrack(deviceId);
 				if(track.getIscensorial() != null && track.getIscensorial() == 0)
 					return getNextTrack(deviceId);
-				if(track.getLength() <  120)
+				if(track.getLength() != null && track.getLength() <  120)
 					return getNextTrack(deviceId);
 
 				trackInfo.put("id", nextTrack.getTrackid().toString());

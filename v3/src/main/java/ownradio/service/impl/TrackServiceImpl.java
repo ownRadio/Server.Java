@@ -100,11 +100,13 @@ public class TrackServiceImpl implements TrackService {
 		String title = null;
 		boolean artistFlag = false;
 		boolean titleFlag = false;
+		Track track = null;
+		Mp3File mp3File = null;
 
 		if (trackid != null) {
 			try {
-				Track track = trackRepository.findOne(trackid);
-				Mp3File mp3File = new Mp3File(track.getPath());
+				track = trackRepository.findOne(trackid);
+				mp3File = new Mp3File(track.getPath());
 				track.setLength((int) mp3File.getLengthInSeconds());//duration track
 				track.setSize((int) mp3File.getLength() / 1024);//size in kilobytes
 
@@ -137,7 +139,10 @@ public class TrackServiceImpl implements TrackService {
 					track.setIsfilledinfo(1);
 				trackRepository.saveAndFlush(track);
 			} catch (Exception ex) {
-//				ex.printStackTrace();
+				if(mp3File == null) {
+					track.setIscorrect(0);
+					trackRepository.saveAndFlush(track);
+				}
 			}
 		}
 	}

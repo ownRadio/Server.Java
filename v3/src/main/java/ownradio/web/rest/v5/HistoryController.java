@@ -58,7 +58,7 @@ public class HistoryController {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));//Time format UTC+0
 			String currentDateTime = dateFormat.format(new Date(history.getLastListen().getTimeInMillis()));
-			logRec.setLogtext("/v4/histories/" + deviceId + "/" + trackId + ". Body: History recid=" + history.getRecid() + ", islisten=" + history.getIsListen() + ", lastlisten=" + currentDateTime);
+			logRec.setLogtext("/v5/histories/" + deviceId + "/" + trackId + ". Body: History recid=" + history.getRecid() + ", islisten=" + history.getIsListen() + ", lastlisten=" + currentDateTime);
 			logService.save(logRec);
 
 			if (deviceService.getById(deviceId) == null || trackService.getById(trackId) == null) {

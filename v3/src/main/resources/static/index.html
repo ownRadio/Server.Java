@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<title>Сервер ownRadio</title>
+	<script type="text/javascript" src="index.js"></script>
+</head>
+<body>
+<h1>Техническая страница сервера ownRadio.</h1>
+<h2>Статус сервера: ОК <br/>Проверка работы API:</h2>
+<ul>
+	<li>Запрос следующего трека  <input type="button" onclick="return getNextTrack('000000000001-0001-0001-0001-000000000001', true, function(result){});" value="Получить информацию о треке">
+	</li>
+	<li>Получение трека по uuid  <input type="button" onclick="return getTrackById('000000000001-0001-0001-0001-000000000001');" value="Получить трек"></li>
+	</li>
+	<li>Отправка истории <input type="button" onclick="return sendHistory('000000000001-0001-0001-0001-000000000001');" value="Отправить историю"></li>
+</ul>
+<div id="response">
+</div>
+</body>
+</html>
